@@ -3,16 +3,30 @@ from kivy.app import App
 from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
+from kivy.properties import ObjectProperty
+from kivy.core.audio import SoundLoader
 
 class SnakeHead(Widget):
-    pass
+    def move(self, new_pos):
+        self.pos = new_pos
 
 class Fruit(Widget):
-    pass
+    def move(self, new_pos):
+        self.pos = new_pos
 class SnakePlusPlusApp(App):
     def build(self):
         Window.size = (900, 600)
-        return Label(text='Hello, world!')
-    
+        game = SnakeGame()
+        return game
+class SnakeGame(Widget):
+    fruit = ObjectProperty(None)
+    head = ObjectProperty(None)
+
+    def __init__(self):
+        super(SnakeGame, self).__init__()    
+        self.sound = SoundLoader.load('background.mp3')
+        self.sound.play()
+
+
 if __name__== '__main__':
     SnakePlusPlusApp().run()
