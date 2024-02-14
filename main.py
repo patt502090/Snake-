@@ -5,8 +5,8 @@ from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.core.audio import SoundLoader
+from kivy.uix.image import Image
 from kivy.uix.button import Button
-
 
 class SnakeHead(Widget):
     def move(self, new_pos):
@@ -31,6 +31,9 @@ class SnakeGame(Widget):
         self.sound = SoundLoader.load('background.mp3')
         self.sound.play()
 
+        with self.canvas:
+            self.background = Image(source='background.png', pos=self.pos, size=(900,600))
+
         self.mute_button = Button(text="Mute", size_hint=(None, None), pos=(Window.width - 20, Window.height - 90))
         self.mute_button.bind(on_press=self.toggle_sound)
         self.add_widget(self.mute_button)
@@ -46,8 +49,5 @@ class SnakeGame(Widget):
                 self.sound.volume=1
                 self.muted = False
                 self.mute_button.text = "Mute"
-
-    
-
 if __name__== '__main__':
     SnakePlusPlusApp().run()
