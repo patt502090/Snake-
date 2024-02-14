@@ -30,9 +30,10 @@ class SnakeGame(Widget):
         super(SnakeGame, self).__init__()    
         self.sound = SoundLoader.load('background.mp3')
         self.sound.play()
-
         with self.canvas:
             self.background = Image(source='background.png', pos=self.pos, size=(900,600))
+
+
 
         self.mute_button = Button(text="Mute", size_hint=(None, None), pos=(Window.width - 20, Window.height - 90))
         self.mute_button.bind(on_press=self.toggle_sound)
