@@ -11,12 +11,29 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics import Color, Rectangle
 from kivy.properties import NumericProperty
 from random import randint
+from kivy.vector import Vector
 
-PLAYER_SIZE = 40
+PLAYER_SIZE = 15
+
 class SnakeHead(Widget):
-    def move(self, new_pos):
-        self.pos = new_pos
+    orientation = (PLAYER_SIZE, 0)
 
+    def reset_pos(self):
+        """
+        รีเซ็ตตำแหน่งของหัวงูไปที่กลางของหน้าต่าง. หรือ วางตำแหน่งผู้เล่นไว้ตรงกลางกระดานเกม
+        """
+        self.pos = [
+            int(Window.width / 2 - (Window.width / 2 % PLAYER_SIZE)),
+            int(Window.height / 2 - (Window.height / 2 % PLAYER_SIZE))
+        ]
+        self.orientation = (PLAYER_SIZE, 0)
+
+    def move(self):
+        """
+        เลื่อนหัวงูไปในทิศทางที่ระบุโดย 'orientation'.
+        """
+        self.pos = Vector(*self.orientation) + self.pos
+        
 class Fruit(Widget):
     def move(self, new_pos):
         self.pos = new_pos
@@ -40,8 +57,8 @@ class SnakeGame(Widget):
         self.sound = SoundLoader.load('background.mp3')
         self.sound.play()
         self.sound.volume = 0.5
-        """with self.canvas:
-            self.background = Image(source='background.png', pos=self.pos, size=(900, 600))"""
+        with self.canvas:
+            self.background = Image(source='background.png', pos=self.pos, size=(900, 600))
 
         self.mute_button = Button(text="Mute", size_hint=(None, None), pos=(Window.width - 20, Window.height - 90))
         self.mute_button.bind(on_press=self.toggle_sound)
@@ -74,10 +91,9 @@ class SnakeGame(Widget):
         roll = self.fruit.pos
         found = False
         print(Window.width)
+        
         while not found:
-
             
-
             roll = [PLAYER_SIZE *
                     randint(0, int(Window.width  / PLAYER_SIZE) - 1),
                     PLAYER_SIZE *
@@ -86,6 +102,7 @@ class SnakeGame(Widget):
             found = True
 
         self.fruit.move(roll)
+
 
 if __name__ == '__main__':
     SnakePlusPlusApp().run()
