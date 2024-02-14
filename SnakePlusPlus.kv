@@ -1,3 +1,4 @@
+
 <Fruit>:
     canvas:
         Color:
@@ -5,3 +6,16 @@
         Rectangle:
             pos: self.pos
             size: self.size
+
+<SnakeGame>:
+    head: snake_head
+    fruit: snake_fruit
+
+    SnakeHead:
+        id: snake_head
+        size: root.player_size - 2,root.player_size - 2
+    Fruit:
+        id: snake_fruit
+        size: root.player_size - 2, root.player_size - 2
+
+       
