@@ -12,6 +12,9 @@ from kivy.graphics import Color, Rectangle
 from kivy.properties import NumericProperty
 from random import randint
 from kivy.vector import Vector
+from kivy.config import Config
+Config.set('graphics', 'width', '900')
+Config.set('graphics', 'height', '600')
 
 PLAYER_SIZE = 15
 
@@ -44,6 +47,7 @@ class SnakePlusPlusApp(App):
         game = SnakeGame()
         return game
 
+
 class SnakeGame(Widget):
     fruit = ObjectProperty(None)
     head = ObjectProperty(None)
@@ -57,22 +61,26 @@ class SnakeGame(Widget):
         self.sound = SoundLoader.load('background.mp3')
         self.sound.play()
         self.sound.volume = 0.5
-        with self.canvas:
-            self.background = Image(source='background.png', pos=self.pos, size=(900, 600))
 
-        self.mute_button = Button(text="Mute", size_hint=(None, None), pos=(Window.width - 20, Window.height - 90))
-        self.mute_button.bind(on_press=self.toggle_sound)
-        self.add_widget(self.mute_button)
-
-        self.score_box = BoxLayout(orientation='horizontal', size_hint=(1, None), height=50)
-
+        # Score box
+        self.score_box = BoxLayout(orientation='horizontal', size_hint=(None, None), height=50)
+        
         with self.score_box.canvas:
-            Color(0, 0, 0)  
-            self.score_box_rect = Rectangle(pos=self.score_box.pos, size=self.score_box.size)
+            Color(0, 0, 0)  # สีดำ
+            self.score_background = Rectangle(pos=self.score_box.pos, size=self.score_box.size)
 
         self.score_label = Label(text=f'Score: {self.score}', size_hint=(None, None), height=50)
         self.score_box.add_widget(self.score_label)
+
+        # Mute button
+        self.mute_button = Button(text="Mute", size_hint=(None, None), size=(70, 50))
+        self.mute_button.bind(on_press=self.toggle_sound)
+        self.score_box.add_widget(self.mute_button)
+
         self.add_widget(self.score_box)
+
+        self.mute_button.pos = (Window.width - self.mute_button.width, Window.height - self.mute_button.height)
+
         self.spawn_fruit()
 
     def toggle_sound(self, instance):
@@ -87,17 +95,12 @@ class SnakeGame(Widget):
                 self.mute_button.text = "Mute"
 
     def spawn_fruit(self):
-
         roll = self.fruit.pos
         found = False
-        print(Window.width)
         
         while not found:
-            
-            roll = [PLAYER_SIZE *
-                    randint(0, int(Window.width  / PLAYER_SIZE) - 1),
-                    PLAYER_SIZE *
-                    randint(0, int(Window.height / PLAYER_SIZE) - 1)]
+            roll = [PLAYER_SIZE * randint(0, int(Window.width  / PLAYER_SIZE) - 1),
+                    PLAYER_SIZE * randint(0, int(Window.height / PLAYER_SIZE) - 1)]
 
             found = True
 
