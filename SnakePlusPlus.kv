@@ -8,8 +8,15 @@
             size: self.size
 
 <SnakeGame>:
-    head: snake_head
+    background: background_image
     fruit: snake_fruit
+    head: snake_head
+
+    Image:
+        id: background_image
+        source: 'background.png'
+        size: root.size
+        allow_stretch: True
 
     SnakeHead:
         id: snake_head
