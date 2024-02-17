@@ -25,4 +25,29 @@
         id: snake_fruit
         size: root.player_size - 2, root.player_size - 2
 
-       
+ScreenManager:
+    transition: FadeTransition()
+    StartScreen:
+    SnakeGame:
+
+<StartScreen>:
+    name: 'start_screen'
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 50
+
+        Label:
+            text: 'Snake Game'
+            font_size: 40
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        Button:
+            text: 'Start'
+            font_size: 24
+            size_hint_y: None
+            height: 50
+            on_release:
+                root.manager.current = 'snake_game'
+                root.start_game()      
