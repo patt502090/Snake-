@@ -1,38 +1,4 @@
-
-<Fruit>:
-    canvas:
-        Color:
-            rgb: (1,0,0)
-        Rectangle:
-            pos: self.pos
-            size: self.size
-
-<SnakeGame>:
-    background: background_image
-    fruit: snake_fruit
-    head: snake_head
-
-    Image:
-        id: background_image
-        source: 'background.png'
-        size: root.size
-        allow_stretch: True
-
-    SnakeHead:
-        id: snake_head
-        size: root.player_size - 2,root.player_size - 2
-    Fruit:
-        id: snake_fruit
-        size: root.player_size - 2, root.player_size - 2
-
-ScreenManager:
-    transition: FadeTransition()
-    StartScreen:
-    SnakeGame:
-
 <StartScreen>:
-    name: 'start_screen'
-    
     BoxLayout:
         orientation: 'vertical'
         padding: 50
@@ -50,4 +16,55 @@ ScreenManager:
             height: 50
             on_release:
                 root.manager.current = 'snake_game'
-                root.start_game()      
+                root.start_game()
+
+<SnakeGame>:
+    fruit: fruit_widget
+    head: snake_head
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Label:
+            text: 'Snake Game'
+            font_size: 40
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        Widget:
+            id: game_canvas
+            size_hint: 1, 1
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+
+            Label:
+                text: 'Score: ' + str(root.score)
+                font_size: 24
+
+            Button:
+                text: 'Mute'
+                font_size: 24
+                on_release: root.toggle_sound(self)
+
+    Fruit:
+        id: fruit_widget
+        size: root.player_size - 2, root.player_size - 2
+        canvas:
+            Color:
+                rgba: 1, 0, 0, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+    SnakeHead:
+        id: snake_head
+        size: root.player_size - 2, root.player_size - 2
+        canvas:
+            Color:
+                rgba: 0, 1, 0, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
