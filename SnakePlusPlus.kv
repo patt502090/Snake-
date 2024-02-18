@@ -27,11 +27,22 @@
 
 
 <StartScreen>:
-    Label:
-        text: "SnakePlusPlus Game"
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'StartScreen.png'
+
 
     Button:
         text: "Start Game"
-        size_hint: 0.3,0.1
-        pos: 280,200
+        size_hint: 0.3, 0.1
+        pos: 310, 80
+        background_normal: 'background.png'  # ภาพปุ่มเมื่อปกติ
+        background_down: 'StartScreen.png'  # ภาพปุ่มเมื่อถูกกด
+        background_color: 0, 0.7, 0.3, 1  # สีพื้นหลังของปุ่ม (RGBA)
+        color: 1, 1, 1, 1  # สีของตัวอักษร (RGBA)
+        font_size: 20  # ขนาดตัวอักษร
+        font_name: 'TAGameboy-Regular'  # ชื่อแบบอักษร
+        border: (10,10,10,10)
         on_press : root.manager.current = "game"
