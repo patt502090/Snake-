@@ -25,7 +25,9 @@ PLAYER_SIZE = 15
 SPEED = 0.1
 
 class StartScreen(Screen):
-    pass 
+    def start_game(self):
+        self.manager.current = "game"
+        self.manager.get_screen('game').start_game_sound()
 
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
@@ -86,9 +88,10 @@ class SnakeGame(Screen):
 
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
-        self.sound = SoundLoader.load('background.mp3')
+        """self.sound = SoundLoader.load('background.mp3')
         self.sound.play()     
-        self.sound.volume = 0.5
+        self.sound.volume = 0.5"""
+
 
         # Score box
         self.score_box = BoxLayout(orientation='horizontal', size_hint=(None, None), height=50)
@@ -112,6 +115,11 @@ class SnakeGame(Screen):
 
         self.tail = []
         self.restart_game()
+
+    def start_game_sound(self):
+        self.sound = SoundLoader.load('background.mp3')
+        self.sound.play()
+        self.sound.volume = 0.5
 
     def toggle_sound(self, instance):
         if self.sound:

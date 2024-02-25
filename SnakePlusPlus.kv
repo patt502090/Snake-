@@ -33,7 +33,6 @@
             size: self.size
             source: 'StartScreen.png'
 
-
     Button:
         text: "Start Game"
         size_hint: 0.3, 0.1
@@ -45,7 +44,8 @@
         font_size: 20  # ขนาดตัวอักษร
         font_name: 'TAGameboy-Regular'  # ชื่อแบบอักษร
         border: (10,10,10,10)
-        on_press : root.manager.current = "game"
+        on_press : root.start_game()
+      
         
 <SnakeHead>:
     canvas:
