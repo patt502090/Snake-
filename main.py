@@ -16,12 +16,13 @@ from kivy.config import Config
 
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
-
+from kivy.clock import Clock
 
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '600')
 
 PLAYER_SIZE = 15
+SPEED = 0.1
 
 class StartScreen(Screen):
     pass 
@@ -57,8 +58,23 @@ class SnakePlusPlusApp(App):
         sm.add_widget(SnakeGame(name='game'))
         return sm
 
+class SnakeTail(Widget):
 
+    def move(self, new_pos):
+        self.pos = new_pos
 
+class smartGrid:
+
+    def __init__(self):
+
+        self.grid = [[False for i in range(600)]
+                     for j in range(900)]
+
+    def __getitem__(self, coords):
+        return self.grid[coords[0]][coords[1]]
+
+    def __setitem__(self, coords, value):
+        self.grid[coords[0]][coords[1]] = value
 
 class SnakeGame(Screen):
     fruit = ObjectProperty(None)
@@ -71,7 +87,7 @@ class SnakeGame(Screen):
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
         self.sound = SoundLoader.load('background.mp3')
-        self.sound.play()
+        self.sound.play()     
         self.sound.volume = 0.5
 
         # Score box
@@ -93,7 +109,9 @@ class SnakeGame(Screen):
 
         self.mute_button.pos = (Window.width - self.mute_button.width, Window.height - self.mute_button.height)
 
-        self.spawn_fruit()
+
+        self.tail = []
+        self.restart_game()
 
     def toggle_sound(self, instance):
         if self.sound:
@@ -109,7 +127,6 @@ class SnakeGame(Screen):
     def spawn_fruit(self):
         roll = self.fruit.pos
         found = False
-        
         while not found:
             roll = [PLAYER_SIZE * randint(0, int(Window.width  / PLAYER_SIZE) - 1),
                     PLAYER_SIZE * randint(0, int(Window.height / PLAYER_SIZE) - 1)]
@@ -118,6 +135,33 @@ class SnakeGame(Screen):
 
         self.fruit.move(roll)
 
+
+    def restart_game(self):
+
+        self.occupied = smartGrid()
+        self.head.reset_pos()
+        self.score = 0
+        for block in self.tail:
+            self.remove_widget(block)
+        self.tail = []
+        self.tail.append(
+            SnakeTail(
+                pos=(self.head.pos[0] - PLAYER_SIZE, self.head.pos[1]),
+                size=(self.head.size)
+            )
+        )
+        self.add_widget(self.tail[-1])
+        self.occupied[self.tail[-1].pos] = True
+        self.tail.append(
+            SnakeTail(
+                pos=(self.head.pos[0] - 2 * PLAYER_SIZE, self.head.pos[1]),
+                size=(self.head.size)
+            )
+        )
+        self.add_widget(self.tail[-1])
+        self.occupied[self.tail[1].pos] = True
+
+        self.spawn_fruit()
 
 if __name__ == '__main__':
     SnakePlusPlusApp().run()

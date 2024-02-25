@@ -2,10 +2,10 @@
 <Fruit>:
     canvas:
         Color:
-            rgb: (1,0,0)
+            rgb: (1,0,1)
         Rectangle:
             pos: self.pos
-            size: self.size
+            size: [50,50]#self.size
 
 <SnakeGame>:
     background: background_image
@@ -46,3 +46,11 @@
         font_name: 'TAGameboy-Regular'  # ชื่อแบบอักษร
         border: (10,10,10,10)
         on_press : root.manager.current = "game"
+        
+<SnakeHead>:
+    canvas:
+        Color:
+            rgb: (0,1,1)
+        Rectangle:
+            pos: self.pos
+            size: [50,50]
