@@ -84,7 +84,7 @@ class SnakeGame(Screen):
     head = ObjectProperty(None)
     sound = None
     muted = False
-    score = 0
+    score = NumericProperty(0)
     player_size = NumericProperty(PLAYER_SIZE)
 
     def __init__(self, **kwargs):
@@ -94,7 +94,7 @@ class SnakeGame(Screen):
         self.sound.volume = 0.5"""
         
     def play_button_click_sound(self):
-        button_click_sound = SoundLoader.load('clickbutton.wav')
+        button_click_sound = SoundLoader.load('clickbuttonV2.wav')
         if button_click_sound:
             button_click_sound.play()
 
@@ -175,6 +175,19 @@ class SnakeGame(Screen):
         self.occupied[self.tail[1].pos] = True
 
         self.spawn_fruit()
+        
+    def key_action(self, *args):
+        command = list(args)[3]
+        if command == 'w' or command == 'up':
+            self.head.orientation = (0, PLAYER_SIZE)
+        elif command == 's' or command == 'down':
+            self.head.orientation = (0, -PLAYER_SIZE)
+        elif command == 'a' or command == 'left':
+            self.head.orientation = (-PLAYER_SIZE, 0)
+        elif command == 'd' or command == 'right':
+            self.head.orientation = (PLAYER_SIZE, 0)
+        elif command == 'r':
+            self.restart_game()
 
 if __name__ == '__main__':
     SnakePlusPlusApp().run()
