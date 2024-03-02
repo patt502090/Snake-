@@ -13,7 +13,7 @@ from kivy.properties import NumericProperty
 from random import randint
 from kivy.vector import Vector
 from kivy.config import Config
-
+from kivy.core.audio import SoundLoader
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.clock import Clock
@@ -28,6 +28,7 @@ class StartScreen(Screen):
     def start_game(self):
         self.manager.current = "game"
         self.manager.get_screen('game').start_game_sound()
+        
 
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
@@ -91,7 +92,11 @@ class SnakeGame(Screen):
         """self.sound = SoundLoader.load('background.mp3')
         self.sound.play()     
         self.sound.volume = 0.5"""
-
+        
+    def play_button_click_sound(self):
+        button_click_sound = SoundLoader.load('clickbutton.wav')
+        if button_click_sound:
+            button_click_sound.play()
 
         # Score box
         self.score_box = BoxLayout(orientation='horizontal', size_hint=(None, None), height=50)

@@ -44,7 +44,9 @@
         font_size: 20  # ขนาดตัวอักษร
         font_name: 'TAGameboy-Regular'  # ชื่อแบบอักษร
         border: (10,10,10,10)
-        on_press : root.start_game()
+        on_press : 
+            root.start_game()
+            root.manager.get_screen('game').play_button_click_sound()
       
         
 <SnakeHead>:
