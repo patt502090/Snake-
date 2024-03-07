@@ -21,6 +21,9 @@ from kivy.clock import Clock
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '600')
 
+WINDOW_HEIGHT = 800
+WINDOW_WIDTH = 800
+
 PLAYER_SIZE = 15
 SPEED = 0.1
 
@@ -89,9 +92,19 @@ class SnakeGame(Screen):
 
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
-        
-        Window.size = (Window.width, Window.hight)
+        Window.size = (WINDOW_WIDTH, WINDOW_HEIGHT)
         Window.bind(on_key_down=self.key_action)
+        
+        if PLAYER_SIZE < 3:
+            raise ValueError("ขนาดโปรแกรมเล่นควรมีอย่างน้อย 3 px")
+
+        if WINDOW_HEIGHT < 3 * PLAYER_SIZE or WINDOW_WIDTH < 3 * PLAYER_SIZE:
+            raise ValueError(
+                "ขนาดหน้าต่างต้องมีขนาดใหญ่กว่าขนาดเครื่องเล่นอย่างน้อย 3 เท่า")
+
+        self.timer = Clock.schedule_interval(self.refresh, SPEED)
+        self.tail = []
+        self.restart_game()
 
         
     def play_button_click_sound(self):
