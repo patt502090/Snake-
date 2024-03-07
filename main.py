@@ -89,9 +89,10 @@ class SnakeGame(Screen):
 
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
-        """self.sound = SoundLoader.load('background.mp3')
-        self.sound.play()     
-        self.sound.volume = 0.5"""
+        
+        Window.size = (Window.width, Window.hight)
+        Window.bind(on_key_down=self.key_action)
+
         
     def play_button_click_sound(self):
         button_click_sound = SoundLoader.load('clickbuttonV2.wav')
