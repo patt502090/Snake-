@@ -105,6 +105,10 @@ class SnakeGame(Screen):
         self.timer = Clock.schedule_interval(self.refresh, SPEED)
         self.tail = []
         self.restart_game()
+        
+        
+    def refresh(self, dt):
+        pass
 
         
     def play_button_click_sound(self):
