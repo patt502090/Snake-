@@ -21,8 +21,8 @@ from kivy.clock import Clock
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '600')
 
-WINDOW_HEIGHT = 900
-WINDOW_WIDTH = 600
+WINDOW_HEIGHT = 600
+WINDOW_WIDTH = 900
 
 PLAYER_SIZE = 15
 SPEED = 0.1
