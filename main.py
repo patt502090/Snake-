@@ -108,8 +108,10 @@ class SnakeGame(Screen):
         
         
     def refresh(self, dt):
-        pass
-
+        if not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (0 <= self.head.pos[1] < WINDOW_HEIGHT):
+            self.restart_game()
+            return
+        
         
     def play_button_click_sound(self):
         button_click_sound = SoundLoader.load('clickbuttonV2.wav')
