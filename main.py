@@ -112,6 +112,23 @@ class SnakeGame(Screen):
             self.restart_game()
             return
         
+        for i in range(2, len(self.tail)):
+            self.tail[-i].move(new_pos=(self.tail[-(i + 1)].pos))
+
+        self.tail[0].move(new_pos=self.head.pos)
+        self.occupied[self.tail[0].pos] = True
+        
+        self.head.move()
+        
+        if self.head.pos == self.fruit.pos:
+            self.score += 1
+            self.tail.append(
+                SnakeTail(
+                    pos=self.head.pos,
+                    size=self.head.size))
+            self.add_widget(self.tail[-1])
+            self.spawn_fruit()
+        
 
 
         
