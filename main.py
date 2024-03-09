@@ -21,8 +21,8 @@ from kivy.clock import Clock
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '600')
 
-WINDOW_HEIGHT = 800
-WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 900
+WINDOW_WIDTH = 600
 
 PLAYER_SIZE = 15
 SPEED = 0.1
@@ -112,6 +112,8 @@ class SnakeGame(Screen):
             self.restart_game()
             return
         
+
+
         
     def play_button_click_sound(self):
         button_click_sound = SoundLoader.load('clickbuttonV2.wav')
