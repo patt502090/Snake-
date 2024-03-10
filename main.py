@@ -73,8 +73,8 @@ class smartGrid:
 
     def __init__(self):
 
-        self.grid = [[False for i in range(600)]
-                     for j in range(900)]
+        self.grid = [[False for i in range(WINDOW_HEIGHT)]
+                    for j in range(WINDOW_WIDTH)]
 
     def __getitem__(self, coords):
         return self.grid[coords[0]][coords[1]]
@@ -122,12 +122,14 @@ class SnakeGame(Screen):
         
         if self.head.pos == self.fruit.pos:
             self.score += 1
+            self.score_label.text = f'Score: {self.score}' 
             self.tail.append(
                 SnakeTail(
                     pos=self.head.pos,
                     size=self.head.size))
             self.add_widget(self.tail[-1])
             self.spawn_fruit()
+            self.occupied[self.fruit.pos] = True
         
 
 
