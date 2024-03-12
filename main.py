@@ -112,6 +112,12 @@ class SnakeGame(Screen):
             self.restart_game()
             return
         
+        if self.occupied[self.head.pos] is True:
+            self.restart_game()
+            return
+        self.occupied[self.tail[-1].pos] = False
+        self.tail[-1].move(self.tail[-2].pos)
+        
         for i in range(2, len(self.tail)):
             self.tail[-i].move(new_pos=(self.tail[-(i + 1)].pos))
 
@@ -129,7 +135,7 @@ class SnakeGame(Screen):
                     size=self.head.size))
             self.add_widget(self.tail[-1])
             self.spawn_fruit()
-            self.occupied[self.fruit.pos] = True
+            #self.occupied[self.fruit.pos] = True
         
 
 
@@ -182,9 +188,15 @@ class SnakeGame(Screen):
         roll = self.fruit.pos
         found = False
         while not found:
-            roll = [PLAYER_SIZE * randint(0, int(Window.width  / PLAYER_SIZE) - 1),
-                    PLAYER_SIZE * randint(0, int(Window.height / PLAYER_SIZE) - 1)]
-
+            # roll = [PLAYER_SIZE * randint(0, int(Window.width  / PLAYER_SIZE) - 1),
+            #         PLAYER_SIZE * randint(0, int(Window.height / PLAYER_SIZE) - 1)]
+            roll = [PLAYER_SIZE *
+                    randint(0, int(WINDOW_WIDTH / PLAYER_SIZE) - 1),
+                    PLAYER_SIZE *
+                    randint(0, int(WINDOW_HEIGHT / PLAYER_SIZE) - 1)]
+            if self.occupied[roll] is True or \
+                    roll == self.head.pos:
+                continue
             found = True
 
         self.fruit.move(roll)
@@ -193,6 +205,8 @@ class SnakeGame(Screen):
     def restart_game(self):
 
         self.occupied = smartGrid()
+        self.timer.cancel()
+        self.timer = Clock.schedule_interval(self.refresh, SPEED)
         self.head.reset_pos()
         self.score = 0
         for block in self.tail:
