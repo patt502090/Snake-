@@ -24,7 +24,7 @@ Config.set('graphics', 'height', '600')
 WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 900
 
-PLAYER_SIZE = 20
+PLAYER_SIZE = 50
 SPEED = 0.1
 
 class StartScreen(Screen):
@@ -119,6 +119,8 @@ class SnakeGame(Screen):
             self.ck = True
             self.restart_game()
             return
+        
+        #เคลื่อนที่หางงู
         self.occupied[self.tail[-1].pos] = False
         self.tail[-1].move(self.tail[-2].pos)
         
@@ -130,6 +132,7 @@ class SnakeGame(Screen):
         
         self.head.move()
         
+        # ตรวจสอบว่าเราพบผลไม้หรือไม่ หากพบ ให้เพิ่มอีกหาง
         if self.head.pos == self.fruit.pos:
             self.score += 1
             self.score_label.text = f'Score: {self.score}' 
@@ -139,9 +142,6 @@ class SnakeGame(Screen):
                     size=self.head.size))
             self.add_widget(self.tail[-1])
             self.spawn_fruit()
-            #self.occupied[self.fruit.pos] = True
-        
-
 
         
     def play_button_click_sound(self):
@@ -199,14 +199,11 @@ class SnakeGame(Screen):
         roll = self.fruit.pos
         found = False
         while not found:
-            # roll = [PLAYER_SIZE * randint(0, int(Window.width  / PLAYER_SIZE) - 1),
-            #         PLAYER_SIZE * randint(0, int(Window.height / PLAYER_SIZE) - 1)]
             roll = [PLAYER_SIZE *
                     randint(0, int(WINDOW_WIDTH / PLAYER_SIZE) - 1),
                     PLAYER_SIZE *
                     randint(0, int(WINDOW_HEIGHT / PLAYER_SIZE) - 1)]
-            if self.occupied[roll] is True or \
-                    roll == self.head.pos:
+            if self.occupied[roll] is True or roll == self.head.pos:
                 continue
             found = True
 
@@ -222,9 +219,12 @@ class SnakeGame(Screen):
         self.timer = Clock.schedule_interval(self.refresh, SPEED)
         self.head.reset_pos()
         self.score = 0
+        
         for block in self.tail:
             self.remove_widget(block)
+            
         self.tail = []
+        
         self.tail.append(
             SnakeTail(
                 pos=(self.head.pos[0] - PLAYER_SIZE, self.head.pos[1]),
@@ -233,6 +233,7 @@ class SnakeGame(Screen):
         )
         self.add_widget(self.tail[-1])
         self.occupied[self.tail[-1].pos] = True
+        
         self.tail.append(
             SnakeTail(
                 pos=(self.head.pos[0] - 2 * PLAYER_SIZE, self.head.pos[1]),
