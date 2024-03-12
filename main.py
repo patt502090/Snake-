@@ -17,20 +17,47 @@ from kivy.core.audio import SoundLoader
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.clock import Clock
+from kivy.uix.popup import Popup
+from kivy.uix.floatlayout import FloatLayout
+
 
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '600')
 
 WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 900
-
 PLAYER_SIZE = 50
-SPEED = 0.1
+SPEED = 0.15
+
+class GameOverPopup(Popup):
+    def __init__(self, score, game_instance, **kwargs):
+        super(GameOverPopup, self).__init__(**kwargs)
+        self.title = "Game Over"
+        self.size_hint = (None, None)
+        self.size = (300, 200)
+        self.game_instance = game_instance          
+   
+        content_layout = BoxLayout(orientation='vertical')       
+       
+        score_label = "Your Score: {}".format(score)
+        content_layout.add_widget(Label(text=score_label))       
+   
+        close_button = Button(text="Close")
+        close_button.bind(on_press=self.close_and_restart)
+        content_layout.add_widget(close_button)
+        
+        self.content = content_layout  
+
+    def close_and_restart(self, instance):     
+        self.dismiss()
+        self.game_instance.start_game_sound()
+        self.game_instance.start_game()
 
 class StartScreen(Screen):
-    def start_game(self):
+    def start_game(self):          
         self.manager.current = "game"
         self.manager.get_screen('game').start_game_sound()
+        self.manager.get_screen('game').start_game()
         
 
 class SnakeHead(Widget):
@@ -94,7 +121,7 @@ class SnakeGame(Screen):
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
         Window.size = (WINDOW_WIDTH, WINDOW_HEIGHT)
-        print(self.size,"ff")
+
         Window.bind(on_key_down=self.key_action)
         
         if PLAYER_SIZE < 3:
@@ -104,20 +131,23 @@ class SnakeGame(Screen):
             raise ValueError(
                 "ขนาดหน้าต่างต้องมีขนาดใหญ่กว่าขนาดเครื่องเล่นอย่างน้อย 3 เท่า")
 
-        self.timer = Clock.schedule_interval(self.refresh, SPEED)
-        self.tail = []
-        self.restart_game()
         
+
+    
+    def start_game(self):                
+        self.ck = True
+        self.timer = Clock.schedule_interval(self.refresh, SPEED) 
+        self.tail = [] 
+        self.restart_game()        
         
-    def refresh(self, dt):
-        if not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (0 <= self.head.pos[1] < WINDOW_HEIGHT):
-            self.ck = True
-            self.restart_game()
+    def refresh(self, dt):       
+        if (not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (0 <= self.head.pos[1] < WINDOW_HEIGHT)) :                        
+            self.break_game() 
+              
             return
-        
-        if self.occupied[self.head.pos] is True:
-            self.ck = True
-            self.restart_game()
+
+        if self.occupied[self.head.pos] is True :                       
+            self.break_game()      
             return
         
         #เคลื่อนที่หางงู
@@ -172,11 +202,10 @@ class SnakeGame(Screen):
         self.tail = []
         self.restart_game()
 
-    def start_game_sound(self):
+    def stop_sound(self):
+        self.sound.stop()
 
-        
-        if self.ck:
-            self.sound.stop()
+    def start_game_sound(self):  
         self.sound = SoundLoader.load('background.mp3')
         self.sound.play()        
         if not self.muted:
@@ -206,25 +235,27 @@ class SnakeGame(Screen):
             if self.occupied[roll] is True or roll == self.head.pos:
                 continue
             found = True
-
         self.fruit.move(roll)
 
+    def break_game(self):                       
+        score_popup = GameOverPopup(score=self.score, game_instance=self)
+        score_popup.open()
+        self.stop_sound()
+        self.occupied = smartGrid()  
+        self.timer.cancel()   
+            
 
-    def restart_game(self):
-        if self.ck:
-            print("check")
-            self.start_game_sound()
-        self.occupied = smartGrid()
+    def restart_game(self): 
+
+        self.occupied = smartGrid()     
         self.timer.cancel()
-        self.timer = Clock.schedule_interval(self.refresh, SPEED)
+        self.timer = Clock.schedule_interval(self.refresh, SPEED)    
         self.head.reset_pos()
-        self.score = 0
-        
+        self.score = 0        
         for block in self.tail:
             self.remove_widget(block)
-            
         self.tail = []
-        
+            
         self.tail.append(
             SnakeTail(
                 pos=(self.head.pos[0] - PLAYER_SIZE, self.head.pos[1]),
@@ -233,7 +264,7 @@ class SnakeGame(Screen):
         )
         self.add_widget(self.tail[-1])
         self.occupied[self.tail[-1].pos] = True
-        
+            
         self.tail.append(
             SnakeTail(
                 pos=(self.head.pos[0] - 2 * PLAYER_SIZE, self.head.pos[1]),
@@ -257,6 +288,14 @@ class SnakeGame(Screen):
             self.head.orientation = (PLAYER_SIZE, 0)
         elif command == 'r':
             self.restart_game()
+
+
+        
+        
+        
+        
+ 
+
 
 if __name__ == '__main__':
     SnakePlusPlusApp().run()
