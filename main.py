@@ -24,7 +24,7 @@ Config.set('graphics', 'height', '600')
 WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 900
 
-PLAYER_SIZE = 15
+PLAYER_SIZE = 20
 SPEED = 0.1
 
 class StartScreen(Screen):
@@ -89,10 +89,12 @@ class SnakeGame(Screen):
     muted = False
     score = NumericProperty(0)
     player_size = NumericProperty(PLAYER_SIZE)
+    ck = False
 
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
         Window.size = (WINDOW_WIDTH, WINDOW_HEIGHT)
+        print(self.size,"ff")
         Window.bind(on_key_down=self.key_action)
         
         if PLAYER_SIZE < 3:
@@ -109,10 +111,12 @@ class SnakeGame(Screen):
         
     def refresh(self, dt):
         if not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (0 <= self.head.pos[1] < WINDOW_HEIGHT):
+            self.ck = True
             self.restart_game()
             return
         
         if self.occupied[self.head.pos] is True:
+            self.ck = True
             self.restart_game()
             return
         self.occupied[self.tail[-1].pos] = False
@@ -169,9 +173,16 @@ class SnakeGame(Screen):
         self.restart_game()
 
     def start_game_sound(self):
+
+        
+        if self.ck:
+            self.sound.stop()
         self.sound = SoundLoader.load('background.mp3')
-        self.sound.play()
-        self.sound.volume = 0.5
+        self.sound.play()        
+        if not self.muted:
+            self.sound.volume = 0.5
+        else:
+            self.sound.volume = 0
 
     def toggle_sound(self, instance):
         if self.sound:
@@ -203,7 +214,9 @@ class SnakeGame(Screen):
 
 
     def restart_game(self):
-
+        if self.ck:
+            print("check")
+            self.start_game_sound()
         self.occupied = smartGrid()
         self.timer.cancel()
         self.timer = Clock.schedule_interval(self.refresh, SPEED)
