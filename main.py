@@ -19,8 +19,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.floatlayout import FloatLayout
-
-
+import os
 
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '600')
@@ -29,6 +28,7 @@ WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 900
 PLAYER_SIZE = 50
 SPEED = 0.155
+TOP_SCORE_FILE = "top_score.txt"
 
 class GameOverPopup(Popup):
     def __init__(self, score, game_instance, **kwargs):
@@ -37,12 +37,12 @@ class GameOverPopup(Popup):
         self.size_hint = (None, None)
         self.size = (300, 200)
         self.game_instance = game_instance          
-   
+
         content_layout = BoxLayout(orientation='vertical')       
-       
+
         score_label = "Your Score: {}".format(score)
         content_layout.add_widget(Label(text=score_label))       
-   
+
         close_button = Button(text="Restart Game")
         close_button.bind(on_press=self.close_and_restart)
         content_layout.add_widget(close_button)
@@ -58,6 +58,11 @@ class GameOverPopup(Popup):
 class StartScreen(Screen):
     countdown_label = ObjectProperty(None)  
     start_button = ObjectProperty(None)
+    top_score_label = ObjectProperty(None)
+
+    def on_enter(self, *args):
+        top_score = load_top_score()
+        self.top_score_label.text = f"Top Score: {top_score}"
 
     def start_game_countdown(self):       
         if self.start_button:
@@ -125,6 +130,19 @@ class smartGrid:
 
     def __setitem__(self, coords, value):
         self.grid[coords[0]][coords[1]] = value
+
+def save_top_score(score):
+    with open(TOP_SCORE_FILE, "w") as file:
+        file.write(str(score))
+
+def load_top_score():
+    if os.path.exists(TOP_SCORE_FILE):
+        with open(TOP_SCORE_FILE, "r") as file:
+            content = file.read().strip()  # ลบช่องว่างที่อาจจะมีอยู่ด้านหลังของข้อความ
+            if content:
+                return int(content)
+    return 0
+
 
 class SnakeGame(Screen):
     fruit = ObjectProperty(None)
@@ -210,6 +228,11 @@ class SnakeGame(Screen):
         self.score_label = Label(text=f'Score: {self.score}', size_hint=(None, None), height=50)
         self.score_box.add_widget(self.score_label)
 
+        # Top Score label
+        top_score = load_top_score()
+        top_score_label = Label(text=f'Top Score: {top_score}', size_hint=(None, None), height=50)
+        self.score_box.add_widget(top_score_label)
+
         # Mute button
         self.mute_button = Button(text="Mute", size_hint=(None, None), size=(70, 50))
         self.mute_button.bind(on_press=self.toggle_sound)
@@ -263,6 +286,9 @@ class SnakeGame(Screen):
         for block in self.tail:            
             self.remove_widget(block)
         self.timer.cancel()   
+
+        if self.score > load_top_score():
+            save_top_score(self.score)
             
 
     def restart_game(self): 
@@ -310,3 +336,4 @@ class SnakeGame(Screen):
 
 if __name__ == '__main__':
     SnakePlusPlusApp().run()
+

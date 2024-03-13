@@ -32,6 +32,7 @@
 
 
 <StartScreen>:
+    top_score_label: top_score_label
     countdown_label: countdown_label
     start_button: start_button
     canvas.before:
@@ -63,6 +64,13 @@
         pos: root.width / 2 - self.width / 2, root.height / 2 - self.height / 2  
         text: "" 
         font_size: 50
+
+    Label:
+        id: top_score_label
+        text: ""
+        size_hint: None, None
+        size: 200, 50
+        pos_hint: {'center_x': 0.5, 'top': 0.9}
       
         
 <SnakeHead>:
