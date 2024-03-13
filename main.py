@@ -70,6 +70,7 @@ class StartScreen(Screen):
     top_score_label = ObjectProperty(None)
     file_chooser_button = ObjectProperty(None)
     file_chooser_popup = None
+    top_score_label = None
 
     def open_filechooser(self):
         self.file_chooser = FileChooserListView(filters=["*.jpg", "*.png"])
@@ -219,6 +220,9 @@ class SnakeGame(Screen):
         self.timer = Clock.schedule_interval(self.refresh, SPEED)
         self.tail = []
         self.restart_game()
+        top_score = load_top_score()
+        if self.manager.current == "start" and StartScreen.top_score_label:
+            StartScreen.top_score_label.text = f"Top Score: {top_score}"
 
     def refresh(self, dt):
 
@@ -310,6 +314,8 @@ class SnakeGame(Screen):
 
         # Top Score label
         top_score = load_top_score()
+        if top_score < self.score:
+            top_score = self.score
         top_score_label = Label(
             text=f"Top Score: {top_score}", size_hint=(None, None), height=50
         )
