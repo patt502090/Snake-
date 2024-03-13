@@ -19,6 +19,9 @@ from kivy.clock import Clock
 from kivy.uix.popup import Popup
 from kivy.uix.floatlayout import FloatLayout
 import os
+from kivy.uix.filechooser import FileChooserListView
+import functools
+from kivy.properties import StringProperty
 
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '600')
@@ -58,6 +61,22 @@ class StartScreen(Screen):
     countdown_label = ObjectProperty(None)  
     start_button = ObjectProperty(None)
     top_score_label = ObjectProperty(None)
+    file_chooser_button = ObjectProperty(None)
+
+    def open_filechooser(self):
+        self.file_chooser = FileChooserListView(filters=['*.jpg', '*.png'])  
+        self.file_chooser.bind(on_submit=functools.partial(self.select_image)) 
+        self.popup = Popup(title='Choose an image file', content=self.file_chooser, size_hint=(0.9, 0.9))
+        self.popup.open()
+
+    def select_image(self, *args):
+        selected_file = args[1]
+        if selected_file:
+            image_path = selected_file[0]
+            print(image_path)
+            self.manager.get_screen('game').update_snake_head_image(image_path)
+            self.manager.get_screen('game').play_button_click_sound()
+            self.popup.dismiss() 
 
     def on_enter(self, *args):
         top_score = load_top_score()
@@ -79,11 +98,13 @@ class StartScreen(Screen):
         self.manager.current = "game"
         self.manager.get_screen('game').start_game_sound()
         self.manager.get_screen('game').start_game()
+    
+
         
 
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
-
+    source = StringProperty('mute.png')
     def reset_pos(self):
         """
         รีเซ็ตตำแหน่งของหัวงูไปที่กลางของหน้าต่าง. หรือ วางตำแหน่งผู้เล่นไว้ตรงกลางกระดานเกม
@@ -99,6 +120,8 @@ class SnakeHead(Widget):
         เลื่อนหัวงูไปในทิศทางที่ระบุโดย 'orientation'.
         """
         self.pos = Vector(*self.orientation) + self.pos
+
+    
         
 class Fruit(Widget):
     def move(self, new_pos):
@@ -152,6 +175,8 @@ class SnakeGame(Screen):
     player_size = NumericProperty(PLAYER_SIZE)
     ck = False
 
+    
+
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
         Window.size = (WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -166,6 +191,7 @@ class SnakeGame(Screen):
                 "ขนาดหน้าต่างต้องมีขนาดใหญ่กว่าขนาดเครื่องเล่นอย่างน้อย 3 เท่า")
   
         self.tail = []
+        
         self.sound = SoundLoader.load('background.mp3')
         self.sound_pos = None
         
@@ -307,7 +333,11 @@ class SnakeGame(Screen):
         # รีเซ็ต Score ไปเป็น 0 หลังจาก brake
         self.score = 0
         self.score_label.text = f'Score: {self.score}'    
-    
+
+    def update_snake_head_image(self, image_source):
+        # อัปเดตรูปภาพของหัวงู
+        print("fffffffffffff")
+        self.head.source = image_source
             
 
     def restart_game(self): 
@@ -351,6 +381,8 @@ class SnakeGame(Screen):
             self.head.orientation = (PLAYER_SIZE, 0)
         elif command == 'r':
             self.restart_game()
+
+
 
 
 if __name__ == '__main__':

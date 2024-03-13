@@ -35,6 +35,8 @@
     top_score_label: top_score_label
     countdown_label: countdown_label
     start_button: start_button
+    file_chooser_button: file_chooser_button  
+
     canvas.before:
         Rectangle:
             pos: self.pos
@@ -71,15 +73,31 @@
         size_hint: None, None
         size: 200, 50
         pos_hint: {'center_x': 0.5, 'top': 0.9}
-      
-        
+
+    Button:  # ปุ่มใหม่สำหรับเปิด filechooser
+        id: file_chooser_button
+        text: "Choose Image"
+        size_hint: 0.3, 0.1
+        pos: 310, 200
+        background_normal: 'background.png'  # ภาพปุ่มเมื่อปกติ
+        background_down: 'StartScreen.png'  # ภาพปุ่มเมื่อถูกกด
+        background_color: 0, 0.7, 0.3, 1  # สีพื้นหลังของปุ่ม (RGBA)
+        color: 1, 1, 1, 1  # สีของตัวอักษร (RGBA)
+        font_size: 20  # ขนาดตัวอักษร
+        font_name: 'TAGameboy-Regular'  # ชื่อแบบอักษร
+        border: (10,10,10,10)
+        on_press:
+            root.open_filechooser()
+
+    
 <SnakeHead>:
     canvas:
         Color:
-            rgb: (0,1,1)
+            rgba: 1, 1, 1, 1
         Rectangle:
-            pos: self.pos
+            source: root.source
             size: [50,50]
+            pos: self.pos
 
 <SnakeTail>:
     canvas:
