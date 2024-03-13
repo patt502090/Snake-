@@ -289,6 +289,11 @@ class SnakeGame(Screen):
 
         if self.score > load_top_score():
             save_top_score(self.score)
+        
+        # รีเซ็ต Score ไปเป็น 0 หลังจาก brake
+        self.score = 0
+        self.score_label.text = f'Score: {self.score}'    
+    
             
 
     def restart_game(self): 
