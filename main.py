@@ -108,10 +108,7 @@ class StartScreen(Screen):
         self.manager.current = "game"
         self.manager.get_screen('game').start_game_sound()
         self.manager.get_screen('game').start_game()
-    
-
         
-
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
     source = StringProperty('mute.png')
@@ -131,12 +128,14 @@ class SnakeHead(Widget):
         """
         self.pos = Vector(*self.orientation) + self.pos
 
-    
-        
 class Fruit(Widget):
     def move(self, new_pos):
         self.pos = new_pos
 
+class PoisonFruit(Widget):
+    def move(self, new_pos):
+        self.pos = new_pos
+        
 class SnakePlusPlusApp(App):
     def build(self):
         Window.size = (900, 600)
@@ -146,12 +145,10 @@ class SnakePlusPlusApp(App):
         return sm
 
 class SnakeTail(Widget):
-
     def move(self, new_pos):
         self.pos = new_pos
 
 class smartGrid:
-
     def __init__(self):
 
         self.grid = [[False for i in range(WINDOW_HEIGHT)]
@@ -178,14 +175,13 @@ def load_top_score():
 
 class SnakeGame(Screen):
     fruit = ObjectProperty(None)
+    poison_fruit = ObjectProperty(None)
     head = ObjectProperty(None)
     sound = None
     muted = False
     score = NumericProperty(0)
     player_size = NumericProperty(PLAYER_SIZE)
     ck = False
-
-    
 
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
@@ -243,7 +239,25 @@ class SnakeGame(Screen):
                     pos=self.head.pos,
                     size=self.head.size))
             self.add_widget(self.tail[-1])
-            self.spawn_fruit()          
+            self.spawn_fruit()
+            
+        elif self.poison_fruit and self.head.pos == self.poison_fruit.pos:
+            self.score -= 3
+            self.score_label.text = f'Score: {self.score}' 
+            # เช็คว่า score น้อยกว่า 0 หรือไม่ หากน้อยกว่าให้ game over
+            if self.score < 0:
+                self.break_game()
+            else:
+                self.tail.extend([
+                    SnakeTail(pos=(self.head.pos[0] + PLAYER_SIZE, self.head.pos[1]), size=(self.head.size)),
+                    SnakeTail(pos=(self.head.pos[0] + 2 * PLAYER_SIZE, self.head.pos[1]), size=(self.head.size))
+                ])
+                self.add_widget(self.tail[-2])
+                self.add_widget(self.tail[-1])
+                self.occupied[self.tail[-2].pos] = True
+                self.occupied[self.tail[-1].pos] = True
+                self.spawn_poison_fruit()
+
         if self.count_pause >= 7:  
             self.timer.cancel()  
             self.timer = Clock.schedule_interval(self.refresh, 0.04)    
@@ -252,9 +266,7 @@ class SnakeGame(Screen):
             self.timer = Clock.schedule_interval(self.refresh, 0.1)  
         elif self.score >= 5:
             self.timer.cancel()  
-            self.timer = Clock.schedule_interval(self.refresh, 0.127)             
-        
-
+            self.timer = Clock.schedule_interval(self.refresh, 0.127)       
         
     def play_button_click_sound(self):
         button_click_sound = SoundLoader.load('clickbuttonV2.wav')
@@ -333,6 +345,21 @@ class SnakeGame(Screen):
                 continue
             found = True
         self.fruit.move(roll)
+        
+    def spawn_poison_fruit(self):
+        if self.poison_fruit is None:  # เพิ่มเงื่อนไขเช็คว่า poison_fruit เป็น None หรือไม่
+            self.poison_fruit = PoisonFruit()  # สร้าง poison_fruit ใหม่หากยังไม่มี
+            self.add_widget(self.poison_fruit)  # เพิ่ม poison_fruit เข้าไปยังหน้าจอ
+        roll = self.poison_fruit.pos
+        found = False
+        while not found:
+            roll = [PLAYER_SIZE *
+                    randint(0, int(WINDOW_WIDTH / PLAYER_SIZE) - 1),
+                    PLAYER_SIZE *
+                    randint(0, int(WINDOW_HEIGHT / PLAYER_SIZE) - 1)]
+            if not self.occupied[roll] and roll != self.head.pos and roll != self.fruit.pos:
+                found = True
+        self.poison_fruit.move(roll)
 
     def break_game(self):                       
         score_popup = GameOverPopup(score=self.score, game_instance=self)
@@ -384,6 +411,7 @@ class SnakeGame(Screen):
         self.occupied[self.tail[1].pos] = True
 
         self.spawn_fruit()
+        self.spawn_poison_fruit()
         
     def key_action(self, *args):
         command = list(args)[3]

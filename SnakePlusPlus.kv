@@ -7,6 +7,14 @@
             pos: self.pos
             size: [50,50]
 
+<PoisonFruit>:
+    canvas:
+        Color:
+            rgb: (238/255, 130/255, 238/255)
+        Rectangle:
+            pos: self.pos
+            size: [50,50]
+
 <SnakeGame>:
     background: background_image
     fruit: snake_fruit
@@ -21,8 +29,13 @@
     SnakeHead:
         id: snake_head
         size: root.player_size - 2,root.player_size - 2
+
     Fruit:
         id: snake_fruit
+        size: root.player_size - 2, root.player_size - 2
+
+    PoisonFruit: 
+        id: poison_fruit
         size: root.player_size - 2, root.player_size - 2
 
     Label:
@@ -89,7 +102,6 @@
         on_press:
             root.open_filechooser()
 
-    
 <SnakeHead>:
     canvas:
         Color:
