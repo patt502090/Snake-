@@ -1,4 +1,4 @@
-
+#:kivy 1.10.0
 <Fruit>:
     canvas:
         Color:
@@ -32,6 +32,8 @@
 
 
 <StartScreen>:
+    countdown_label: countdown_label
+    start_button: start_button
     canvas.before:
         Rectangle:
             pos: self.pos
@@ -39,6 +41,7 @@
             source: 'StartScreen.png'
 
     Button:
+        id: start_button
         text: "Start Game"
         size_hint: 0.3, 0.1
         pos: 310, 80
@@ -49,9 +52,17 @@
         font_size: 20  # ขนาดตัวอักษร
         font_name: 'TAGameboy-Regular'  # ชื่อแบบอักษร
         border: (10,10,10,10)
-        on_press : 
-            root.start_game()
-            root.manager.get_screen('game').play_button_click_sound()
+        on_press :
+            root.start_game_countdown() 
+            root.manager.get_screen('game').play_button_click_sound()    
+
+    Label:
+        id: countdown_label  
+        size_hint: None, None
+        size: 100, 100 
+        pos: root.width / 2 - self.width / 2, root.height / 2 - self.height / 2  
+        text: "" 
+        font_size: 50
       
         
 <SnakeHead>:

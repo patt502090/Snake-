@@ -21,6 +21,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.floatlayout import FloatLayout
 
 
+
 Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '600')
 
@@ -42,7 +43,7 @@ class GameOverPopup(Popup):
         score_label = "Your Score: {}".format(score)
         content_layout.add_widget(Label(text=score_label))       
    
-        close_button = Button(text="Close")
+        close_button = Button(text="Restart Game")
         close_button.bind(on_press=self.close_and_restart)
         content_layout.add_widget(close_button)
         
@@ -53,8 +54,25 @@ class GameOverPopup(Popup):
         self.game_instance.start_game_sound()
         self.game_instance.start_game()
 
+
 class StartScreen(Screen):
-    def start_game(self):          
+    countdown_label = ObjectProperty(None)  
+    start_button = ObjectProperty(None)
+
+    def start_game_countdown(self):
+       
+        if self.start_button:
+            self.start_button.opacity = 0              
+        with self.canvas.before:
+            Color(0, 0, 0, 1)  
+            self.background_rect = Rectangle(pos=self.pos, size=self.size)       
+        Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '3'), 1)  
+        Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '2'), 2)  
+        Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '1'), 3)  
+        Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', 'Go Go Go'), 3.65)  
+        Clock.schedule_once(self.start_game, 4) 
+
+    def start_game(self, dt):
         self.manager.current = "game"
         self.manager.get_screen('game').start_game_sound()
         self.manager.get_screen('game').start_game()
@@ -130,12 +148,12 @@ class SnakeGame(Screen):
         if WINDOW_HEIGHT < 3 * PLAYER_SIZE or WINDOW_WIDTH < 3 * PLAYER_SIZE:
             raise ValueError(
                 "ขนาดหน้าต่างต้องมีขนาดใหญ่กว่าขนาดเครื่องเล่นอย่างน้อย 3 เท่า")
-
+  
+        self.tail = []
         
 
     
-    def start_game(self):                
-        self.ck = True
+    def start_game(self):                        
         self.timer = Clock.schedule_interval(self.refresh, SPEED) 
         self.tail = [] 
         self.restart_game()        
@@ -200,7 +218,8 @@ class SnakeGame(Screen):
 
 
         self.tail = []
-        self.restart_game()
+        
+        #self.restart_game()
 
     def stop_sound(self):
         self.sound.stop()
@@ -246,7 +265,7 @@ class SnakeGame(Screen):
             
 
     def restart_game(self): 
-
+        
         self.occupied = smartGrid()     
         self.timer.cancel()
         self.timer = Clock.schedule_interval(self.refresh, SPEED)    
@@ -254,8 +273,8 @@ class SnakeGame(Screen):
         self.score = 0        
         for block in self.tail:
             self.remove_widget(block)
-        self.tail = []
-            
+        
+        self.tail = []  
         self.tail.append(
             SnakeTail(
                 pos=(self.head.pos[0] - PLAYER_SIZE, self.head.pos[1]),
@@ -288,13 +307,6 @@ class SnakeGame(Screen):
             self.head.orientation = (PLAYER_SIZE, 0)
         elif command == 'r':
             self.restart_game()
-
-
-        
-        
-        
-        
- 
 
 
 if __name__ == '__main__':
