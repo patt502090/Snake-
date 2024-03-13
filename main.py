@@ -55,19 +55,28 @@ class GameOverPopup(Popup):
         self.dismiss()
         self.game_instance.start_game_sound()
         self.game_instance.start_game()
-
+        
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            return super().on_touch_down(touch) 
+        else:
+            return False 
 
 class StartScreen(Screen):
     countdown_label = ObjectProperty(None)  
     start_button = ObjectProperty(None)
     top_score_label = ObjectProperty(None)
     file_chooser_button = ObjectProperty(None)
+    file_chooser_popup = None
 
     def open_filechooser(self):
         self.file_chooser = FileChooserListView(filters=['*.jpg', '*.png'])  
         self.file_chooser.bind(on_submit=functools.partial(self.select_image)) 
-        self.popup = Popup(title='Choose an image file', content=self.file_chooser, size_hint=(0.9, 0.9))
-        self.popup.open()
+        self.file_chooser_popup = Popup(title='Choose an image file', content=self.file_chooser, size_hint=(0.9, 0.9))       
+        close_button = Button(text="Close", size_hint_y=None, height=40)
+        close_button.bind(on_press=self.file_chooser_popup.dismiss)
+        self.file_chooser_popup.content.add_widget(close_button)
+        self.file_chooser_popup.open()
 
     def select_image(self, *args):
         selected_file = args[1]
@@ -76,7 +85,7 @@ class StartScreen(Screen):
             print(image_path)
             self.manager.get_screen('game').update_snake_head_image(image_path)
             self.manager.get_screen('game').play_button_click_sound()
-            self.popup.dismiss() 
+            self.file_chooser_popup.dismiss()
 
     def on_enter(self, *args):
         top_score = load_top_score()
@@ -84,13 +93,14 @@ class StartScreen(Screen):
 
     def start_game_countdown(self):       
         if self.start_button:
-            self.start_button.opacity = 0              
+            self.start_button.opacity = 0       
+            self.file_chooser_button.opacity = 0          
         with self.canvas.before:
             Color(0, 0, 0, 1)  
             self.background_rect = Rectangle(pos=self.pos, size=self.size)       
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '3'), 1)  
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '2'), 2)  
-        Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '1'), 3)  
+        Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '1'), 2.98)  
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', 'Go Go Go'), 3.5)  
         Clock.schedule_once(self.start_game, 3.7) 
 
@@ -191,7 +201,7 @@ class SnakeGame(Screen):
                 "ขนาดหน้าต่างต้องมีขนาดใหญ่กว่าขนาดเครื่องเล่นอย่างน้อย 3 เท่า")
   
         self.tail = []
-        
+        self.count_pause = 0
         self.sound = SoundLoader.load('background.mp3')
         self.sound_pos = None
         
@@ -203,7 +213,7 @@ class SnakeGame(Screen):
         self.restart_game()        
         
     def refresh(self, dt):
-                    
+        
         if (not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (0 <= self.head.pos[1] < WINDOW_HEIGHT)) :                        
             self.break_game()               
             return
@@ -226,20 +236,25 @@ class SnakeGame(Screen):
         
         # ตรวจสอบว่าเราพบผลไม้หรือไม่ หากพบ ให้เพิ่มอีกหาง
         if self.head.pos == self.fruit.pos:
-            self.score += 1
-            if self.score >= 10:
-                self.timer.cancel()  
-                self.timer = Clock.schedule_interval(self.refresh, 0.1)  
-            elif self.score >= 5:
-                self.timer.cancel()  
-                self.timer = Clock.schedule_interval(self.refresh, 0.127)                 
+            self.score += 1           
             self.score_label.text = f'Score: {self.score}' 
             self.tail.append(
                 SnakeTail(
                     pos=self.head.pos,
                     size=self.head.size))
             self.add_widget(self.tail[-1])
-            self.spawn_fruit()        
+            self.spawn_fruit()          
+        if self.count_pause >= 7:  
+            self.timer.cancel()  
+            self.timer = Clock.schedule_interval(self.refresh, 0.04)    
+        elif self.score >= 10:
+            self.timer.cancel()  
+            self.timer = Clock.schedule_interval(self.refresh, 0.1)  
+        elif self.score >= 5:
+            self.timer.cancel()  
+            self.timer = Clock.schedule_interval(self.refresh, 0.127)             
+        
+
         
     def play_button_click_sound(self):
         button_click_sound = SoundLoader.load('clickbuttonV2.wav')
@@ -274,6 +289,7 @@ class SnakeGame(Screen):
 
     def pause_game(self , instance):              
         if self.timer.is_triggered:
+            self.count_pause +=1
             self.timer.cancel()      
             if not self.muted:
                 self.sound.volume = 0           
@@ -288,7 +304,6 @@ class SnakeGame(Screen):
     def start_game_sound(self):          
         self.sound.play()   
         self.sound.loop = True   
-        self.sound.seek(self.sound_pos)  
         if not self.muted:
             self.sound.volume = 0.5
         else:
@@ -326,7 +341,8 @@ class SnakeGame(Screen):
         for block in self.tail:            
             self.remove_widget(block)
         self.timer.cancel()   
-
+        self.mute_button.disabled = True
+        self.pause.disabled = True
         if self.score > load_top_score():
             save_top_score(self.score)
         
@@ -335,13 +351,13 @@ class SnakeGame(Screen):
         self.score_label.text = f'Score: {self.score}'    
 
     def update_snake_head_image(self, image_source):
-        # อัปเดตรูปภาพของหัวงู
-        print("fffffffffffff")
         self.head.source = image_source
             
 
     def restart_game(self): 
-     
+        self.count_pause = 0
+        self.pause.disabled = False
+        self.mute_button.disabled = False
         self.occupied = smartGrid()     
         self.timer.cancel()
         self.timer = Clock.schedule_interval(self.refresh, SPEED)    
@@ -381,7 +397,6 @@ class SnakeGame(Screen):
             self.head.orientation = (PLAYER_SIZE, 0)
         elif command == 'r':
             self.restart_game()
-
 
 
 
