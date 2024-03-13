@@ -13,7 +13,6 @@ from kivy.properties import NumericProperty
 from random import randint
 from kivy.vector import Vector
 from kivy.config import Config
-from kivy.core.audio import SoundLoader
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.clock import Clock
@@ -68,7 +67,7 @@ class StartScreen(Screen):
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '3'), 1)  
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '2'), 2)  
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', '1'), 3)  
-        Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', 'Go Go Go'), 3.4)  
+        Clock.schedule_once(lambda dt: setattr(self.countdown_label, 'text', 'Go Go Go'), 3.5)  
         Clock.schedule_once(self.start_game, 3.7) 
 
     def start_game(self, dt):
@@ -149,6 +148,8 @@ class SnakeGame(Screen):
                 "ขนาดหน้าต่างต้องมีขนาดใหญ่กว่าขนาดเครื่องเล่นอย่างน้อย 3 เท่า")
   
         self.tail = []
+        self.sound = SoundLoader.load('background.mp3')
+        self.sound_pos = None
         
 
     
@@ -157,7 +158,8 @@ class SnakeGame(Screen):
         self.tail = [] 
         self.restart_game()        
         
-    def refresh(self, dt):               
+    def refresh(self, dt):
+                    
         if (not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (0 <= self.head.pos[1] < WINDOW_HEIGHT)) :                        
             self.break_game()               
             return
@@ -213,20 +215,34 @@ class SnakeGame(Screen):
         # Mute button
         self.mute_button = Button(text="Mute", size_hint=(None, None), size=(70, 50))
         self.mute_button.bind(on_press=self.toggle_sound)
+        self.pause = Button(text="pause", size_hint=(None, None), size=(70, 50))
+        self.pause.bind(on_press=self.pause_game)
         self.score_box.add_widget(self.mute_button)
-
+        self.score_box.add_widget(self.pause)
         self.add_widget(self.score_box)
 
         self.mute_button.pos = (Window.width - self.mute_button.width, Window.height - self.mute_button.height)
 
-    
+    def pause_game(self , instance):              
+        if self.timer.is_triggered:
+            self.timer.cancel()       
+            if not self.muted:
+                self.sound.volume = 0           
+        else:
+            self.timer()        
+            if not self.muted:
+                self.sound.volume = 0.5  
 
+            
+            
+      
     def stop_sound(self):
         self.sound.stop()
 
-    def start_game_sound(self):  
-        self.sound = SoundLoader.load('background.mp3')
-        self.sound.play()        
+    def start_game_sound(self):          
+        self.sound.play()   
+        self.sound.loop = True   
+        self.sound.seek(self.sound_pos)  
         if not self.muted:
             self.sound.volume = 0.5
         else:
