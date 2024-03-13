@@ -248,7 +248,7 @@ class SnakeGame(Screen):
 
     def pause_game(self , instance):              
         if self.timer.is_triggered:
-            self.timer.cancel()       
+            self.timer.cancel()      
             if not self.muted:
                 self.sound.volume = 0           
         else:
@@ -256,9 +256,6 @@ class SnakeGame(Screen):
             if not self.muted:
                 self.sound.volume = 0.5  
 
-            
-            
-      
     def stop_sound(self):
         self.sound.stop()
 
@@ -278,9 +275,10 @@ class SnakeGame(Screen):
                 self.muted = True
                 self.mute_button.text = "Unmute"
             else:
-                self.sound.volume = 0.5
-                self.muted = False
-                self.mute_button.text = "Mute"
+                if self.timer.is_triggered:
+                    self.sound.volume = 0.5
+                    self.muted = False
+                    self.mute_button.text = "Mute"
 
     def spawn_fruit(self):
         roll = self.fruit.pos
