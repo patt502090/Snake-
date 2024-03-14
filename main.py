@@ -43,7 +43,7 @@ class GameOverPopup(Popup):
 
         content_layout = BoxLayout(orientation="vertical")
 
-        score_label = "Your Score: {}".format(score)
+        score_label = "Your Score: {}".format(max(score, 0))
         content_layout.add_widget(Label(text=score_label))
 
         close_button = Button(text="Restart Game")
@@ -121,7 +121,7 @@ class StartScreen(Screen):
 
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
-    source = StringProperty("mute.png")
+    source = StringProperty("head.jpg")
 
     def reset_pos(self):
         """
@@ -201,6 +201,7 @@ class SnakeGame(Screen):
     ck = False
     
     fruit_sound = SoundLoader.load('collide+.mp3')
+    poison_fruit_sound = SoundLoader.load("collide-.mp3")
     gameOver_sound = SoundLoader.load('gameOver.mp3')
 
     def __init__(self, **kwargs):
@@ -332,6 +333,8 @@ class SnakeGame(Screen):
             self.spawn_fruit()
 
         elif self.poison_fruit and self.head.pos == self.poison_fruit.pos:
+            if self.poison_fruit_sound:
+                self.poison_fruit_sound.play()
             self.score -= 3
             self.score_label.text = f"Score: {self.score}"
             # เช็คว่า score น้อยกว่า 0 หรือไม่ หากน้อยกว่าให้ game over
