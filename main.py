@@ -196,6 +196,7 @@ class SnakeGame(Screen):
     sound = None
     muted = False
     score = NumericProperty(0)
+    last_score = NumericProperty(0)
     player_size = NumericProperty(PLAYER_SIZE)
     ck = False
 
@@ -217,6 +218,7 @@ class SnakeGame(Screen):
         self.sound_pos = None
 
     def start_game(self):
+        self.last_score = 0
         self.timer = Clock.schedule_interval(self.refresh, SPEED)
         self.tail = []
         self.restart_game()
@@ -225,6 +227,41 @@ class SnakeGame(Screen):
             StartScreen.top_score_label.text = f"Top Score: {top_score}"
 
     def refresh(self, dt):
+
+        if self.score <= 5 and self.score % 5 == 0 and self.score != self.last_score:
+            self.last_score = self.score
+            self.spawn_poison_fruit()
+
+        elif (
+            self.score > 5
+            and self.score <= 10
+            and self.score % 4 == 0
+            and self.score != self.last_score
+        ):
+            self.last_score = self.score
+            self.spawn_poison_fruit()
+
+        elif (
+            self.score > 10
+            and self.score <= 15
+            and self.score % 3 == 0
+            and self.score != self.last_score
+        ):
+            self.last_score = self.score
+            self.spawn_poison_fruit()
+
+        elif (
+            self.score > 15
+            and self.score <= 25
+            and self.score % 2 == 0
+            and self.score != self.last_score
+        ):
+            self.last_score = self.score
+            self.spawn_poison_fruit()
+
+        elif self.score > 25 and self.score % 1 == 0 and self.score != self.last_score:
+            self.last_score = self.score
+            self.spawn_poison_fruit()
 
         if not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (
             0 <= self.head.pos[1] < WINDOW_HEIGHT
