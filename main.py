@@ -199,6 +199,9 @@ class SnakeGame(Screen):
     last_score = NumericProperty(0)
     player_size = NumericProperty(PLAYER_SIZE)
     ck = False
+    
+    fruit_sound = SoundLoader.load('collide+.mp3')
+    gameOver_sound = SoundLoader.load('gameOver.mp3')
 
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
@@ -287,6 +290,8 @@ class SnakeGame(Screen):
 
         # ตรวจสอบว่าเราพบผลไม้หรือไม่ หากพบ ให้เพิ่มอีกหาง
         if self.head.pos == self.fruit.pos:
+            if self.fruit_sound:
+                self.fruit_sound.play()
             self.score += 1
             self.score_label.text = f"Score: {self.score}"
             self.tail.append(SnakeTail(pos=self.head.pos, size=self.head.size))
@@ -329,7 +334,7 @@ class SnakeGame(Screen):
             self.timer = Clock.schedule_interval(self.refresh, 0.127)
 
     def play_button_click_sound(self):
-        button_click_sound = SoundLoader.load("clickbuttonV2.wav")
+        button_click_sound = SoundLoader.load("clickbutton.wav")
         if button_click_sound:
             button_click_sound.play()
 
@@ -441,6 +446,7 @@ class SnakeGame(Screen):
     def break_game(self):
         score_popup = GameOverPopup(score=self.score, game_instance=self)
         score_popup.open()
+        self.play_gameOver_sound()
         self.stop_sound()
         for block in self.tail:
             self.remove_widget(block)
@@ -501,6 +507,10 @@ class SnakeGame(Screen):
             self.head.orientation = (PLAYER_SIZE, 0)
         elif command == "r":
             self.restart_game()
+            
+    def play_gameOver_sound(self):
+        if self.gameOver_sound:
+            self.gameOver_sound.play()
 
 
 if __name__ == "__main__":
