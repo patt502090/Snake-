@@ -166,7 +166,7 @@ class SnakeTail(Widget):
 
 class smartGrid:
     def __init__(self):
-        self.grid = [[False for i in range(WINDOW_HEIGHT)] for j in range(WINDOW_WIDTH)]
+        self.grid = [[False for i in range(WINDOW_HEIGHT+190)] for j in range(WINDOW_WIDTH+300)]
 
     def __getitem__(self, coords):
         return self.grid[coords[0]][coords[1]]
@@ -226,9 +226,7 @@ class SnakeGame(Screen):
 
     def refresh(self, dt):
 
-        if not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (
-            0 <= self.head.pos[1] < WINDOW_HEIGHT
-        ):
+        if not (0 <= self.head.pos[0] < WINDOW_WIDTH+200) or not (20 <= self.head.pos[1] < WINDOW_HEIGHT+130):
             self.break_game()
             return
 
@@ -298,7 +296,7 @@ class SnakeGame(Screen):
 
         # Score box
         self.score_box = BoxLayout(
-            orientation="horizontal", size_hint=(None, None), height=50
+            orientation="horizontal", size_hint=(None, None), height=50, width=Window.width
         )
 
         with self.score_box.canvas:
@@ -334,6 +332,9 @@ class SnakeGame(Screen):
             Window.width - self.mute_button.width,
             Window.height - self.mute_button.height,
         )
+
+        
+
 
     def pause_game(self, instance):
         if self.timer.is_triggered:
@@ -379,7 +380,11 @@ class SnakeGame(Screen):
             ]
             if self.occupied[roll] is True or roll == self.head.pos:
                 continue
-            found = True
+            found = True             
+            if roll[1] == 0:
+                found = False
+            if roll[0] == 1050:
+                found = False       
         self.fruit.move(roll)
 
     def spawn_poison_fruit(self):
@@ -399,6 +404,10 @@ class SnakeGame(Screen):
                 and roll != self.fruit.pos
             ):
                 found = True
+            if roll[1] == 0:
+                found = False
+            if roll[0] == 1050:
+                found = False
         self.poison_fruit.move(roll)
 
     def break_game(self):
