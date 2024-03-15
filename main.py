@@ -166,7 +166,7 @@ class SnakeTail(Widget):
 
 class smartGrid:
     def __init__(self):
-        self.grid = [[False for i in range(WINDOW_HEIGHT+190)] for j in range(WINDOW_WIDTH+300)]
+        self.grid = [[False for i in range(WINDOW_HEIGHT)] for j in range(WINDOW_WIDTH)]
 
     def __getitem__(self, coords):
         return self.grid[coords[0]][coords[1]]
@@ -301,7 +301,7 @@ class SnakeGame(Screen):
             self.last_score = self.score
             self.spawn_poison_fruit()
 
-        if not (0 <= self.head.pos[0] < WINDOW_WIDTH+200) or not (20 <= self.head.pos[1] < WINDOW_HEIGHT+130):
+        if not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (0 <= self.head.pos[1] < WINDOW_HEIGHT):
             self.break_game()
             return
 
