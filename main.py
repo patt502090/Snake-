@@ -38,7 +38,7 @@ class GameOverPopup(Popup):
         super(GameOverPopup, self).__init__(**kwargs)
         self.title = "Game Over"
         self.size_hint = (None, None)
-        self.size = (300, 200)
+        self.size = (400, 300)
         self.game_instance = game_instance
 
         content_layout = BoxLayout(orientation="vertical")
@@ -48,13 +48,22 @@ class GameOverPopup(Popup):
 
         close_button = Button(text="Restart Game")
         close_button.bind(on_press=self.close_and_restart)
+
+        pre_button = Button(text="Back to Home Screen")
+        pre_button.bind(on_press=self.pre_start)
+        content_layout.add_widget(pre_button)
         content_layout.add_widget(close_button)
 
         self.content = content_layout
 
+    def pre_start(self, instance):
+        self.dismiss()        
+        App.get_running_app().root.get_screen("start").pre_start(instance)
+    
+
     def close_and_restart(self, instance):
         self.dismiss()
-        self.game_instance.start_game_sound()
+        self.game_instance.start_game_sound(False)
         self.game_instance.start_game()
 
     def on_touch_down(self, touch):
@@ -71,6 +80,16 @@ class StartScreen(Screen):
     file_chooser_button = ObjectProperty(None)
     file_chooser_popup = None
     top_score_label = None
+    
+    def pre_start(self, instance):       
+        if self.background_rect is not None:
+            self.canvas.before.remove(self.background_rect)
+        self.start_button.opacity = 1
+        self.file_chooser_button.opacity = 1
+        self.start_button.disabled = False
+        self.file_chooser_button.disabled = False
+        App.get_running_app().root.transition.direction = 'right'
+        App.get_running_app().root.current = "start"
 
     def open_filechooser(self):
         self.file_chooser = FileChooserListView(filters=["*.jpg", "*.png"])
@@ -98,27 +117,28 @@ class StartScreen(Screen):
         top_score = load_top_score()
         self.top_score_label.text = f"Top Score: {top_score}"
 
-    def start_game_countdown(self):
-        if self.start_button:
-            self.start_button.opacity = 0
-            self.file_chooser_button.opacity = 0
+    def start_game_countdown(self):        
+        self.start_button.opacity = 0
+        self.file_chooser_button.opacity = 0
+        self.start_button.disabled  = True
+        self.file_chooser_button.disabled  = True
         with self.canvas.before:
             Color(0, 0, 0, 1)
             self.background_rect = Rectangle(pos=self.pos, size=self.size)
+ 
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", "3"), 1)
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", "2"), 2)
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", "1"), 2.98)
-        Clock.schedule_once(
-            lambda dt: setattr(self.countdown_label, "text", "Go Go Go"), 3.5
-        )
+        Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", "Go Go Go"), 3.5)
+        Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", ""), 3.69)
         Clock.schedule_once(self.start_game, 3.7)
+
 
     def start_game(self, dt):
         self.manager.current = "game"
-        self.manager.get_screen("game").start_game_sound()
+        self.manager.get_screen("game").start_game_sound(True)
         self.manager.get_screen("game").start_game()
-
-
+        
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
     source = StringProperty("head.jpg")
@@ -220,6 +240,7 @@ class SnakeGame(Screen):
         self.count_pause = 0
         self.sound = SoundLoader.load("background.mp3")
         self.sound_pos = None
+
 
     def start_game(self):
         self.last_score = 0
@@ -430,23 +451,32 @@ class SnakeGame(Screen):
     def stop_sound(self):
         self.sound.stop()
 
-    def start_game_sound(self):
+    def start_game_sound(self,status):
         self.sound.play()
-        self.sound.loop = True
+        self.sound.loop = True        
+        if status:            
+            self.muted = False
         if not self.muted:
             self.sound.volume = 0.5
         else:
             self.sound.volume = 0
 
+
     def toggle_sound(self, instance):
         if self.sound:
             if not self.muted:
                 self.sound.volume = 0
+                self.fruit_sound.volume = 0
+                self.gameOver_sound.volume = 0
+                self.poison_fruit_sound.volume = 0
                 self.muted = True
                 self.mute_button.text = "Unmute"
             else:
-                if self.timer.is_triggered:
+                if self.timer.is_triggered:                    
                     self.sound.volume = 0.5
+                    self.fruit_sound.volume = 0.5
+                    self.gameOver_sound.volume = 0.5
+                    self.poison_fruit_sound.volume = 0.5
                     self.muted = False
                     self.mute_button.text = "Mute"
 
