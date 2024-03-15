@@ -25,6 +25,7 @@
         source: 'background.png'
         size: root.size
         allow_stretch: True
+        keep_ratio: False
 
     SnakeHead:
         id: snake_head
@@ -59,7 +60,7 @@
 
     Button:
         id: start_button
-        text: "Start Game"
+        text: "เริ่มเกม"
         size_hint: 0.3, 0.1
         pos_hint: {'center_x': 0.5, 'top': 0.4}#pos: 310, 80
         background_normal: 'background.png'  # ภาพปุ่มเมื่อปกติ
@@ -86,7 +87,7 @@
         text: ""
         size_hint: None, None
         size: 200, 50
-        pos_hint: {'center_x': 0.5, 'top': 0.9}
+        pos_hint: {'center_x': 0.5, 'top': 0.1}
 
     Button:  # ปุ่มใหม่สำหรับเปิด filechooser
         id: file_chooser_button
