@@ -63,7 +63,8 @@
     top_score_label: top_score_label
     countdown_label: countdown_label
     start_button: start_button
-    file_chooser_button: file_chooser_button  
+    file_chooser_button: file_chooser_button 
+    exit_button : exit_button 
 
     canvas.before:
         Rectangle:
@@ -116,6 +117,7 @@
             root.open_filechooser()
 
     Button:  
+        id: exit_button
         text: "ออกจากเกม"
         size_hint: 0.3, 0.1
         pos_hint: {'center_x': 0.5, 'top': 0.28}

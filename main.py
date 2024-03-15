@@ -79,6 +79,7 @@ class StartScreen(Screen):
     start_button = ObjectProperty(None)
     top_score_label = ObjectProperty(None)
     file_chooser_button = ObjectProperty(None)
+    exit_button = ObjectProperty(None)
     file_chooser_popup = None
     top_score_label = None
     
@@ -87,8 +88,10 @@ class StartScreen(Screen):
             self.canvas.before.remove(self.background_rect)
         self.start_button.opacity = 1
         self.file_chooser_button.opacity = 1
+        self.exit_button.opacity = 1
         self.start_button.disabled = False
         self.file_chooser_button.disabled = False
+        self.exit_button.disabled = False
         App.get_running_app().root.transition.direction = 'right'
         App.get_running_app().root.current = "start"
 
@@ -121,8 +124,11 @@ class StartScreen(Screen):
     def start_game_countdown(self):        
         self.start_button.opacity = 0
         self.file_chooser_button.opacity = 0
+        self.exit_button.opacity = 0
         self.start_button.disabled  = True
         self.file_chooser_button.disabled  = True
+        self.exit_button.disabled = True
+
         with self.canvas.before:
             Color(0, 0, 0, 1)
             self.background_rect = Rectangle(pos=self.pos, size=self.size)
