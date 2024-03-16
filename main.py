@@ -25,6 +25,7 @@ from kivy.properties import StringProperty, ListProperty
 import random
 from kivy.uix.image import AsyncImage
 from os.path import basename
+from kivy.uix.colorpicker import ColorPicker
 
 Config.set("graphics", "width", "900")
 Config.set("graphics", "height", "600")
@@ -82,6 +83,7 @@ class StartScreen(Screen):
     top_score_label = ObjectProperty(None)
     file_chooser_button = ObjectProperty(None)
     exit_button = ObjectProperty(None)
+    color_button = ObjectProperty(None)
     file_chooser_popup = None
     top_score_label = None
     muted = False
@@ -96,6 +98,8 @@ class StartScreen(Screen):
         self.file_chooser_button.disabled = False
         self.muted = muted
         self.exit_button.disabled = False
+        self.color_button.disabled = False
+        self.color_button.opacity = 1
         App.get_running_app().root.transition.direction = "right"
         App.get_running_app().root.current = "start"
 
@@ -160,6 +164,8 @@ class StartScreen(Screen):
         self.start_button.disabled = True
         self.file_chooser_button.disabled = True
         self.exit_button.disabled = True
+        self.color_button.disabled = True
+        self.color_button.opacity = 0
 
         with self.canvas.before:
             Color(0, 0, 0, 1)
@@ -179,6 +185,34 @@ class StartScreen(Screen):
         sound = not self.muted        
         self.manager.get_screen("game").start_game_sound(sound)
         self.manager.get_screen("game").start_game()
+
+    def open_color_picker(self):
+        popup_content = BoxLayout(orientation='vertical')
+        
+        color_picker = ColorPicker()
+        popup_content.add_widget(color_picker)
+
+        button_layout = BoxLayout(size_hint_y=None, height=50)
+        save_button = Button(text="Save", size_hint_x=0.5)
+        cancel_button = Button(text="Cancel", size_hint_x=0.5)
+
+        def save_color(instance):
+            snake_tail_color = color_picker.color            
+            self.manager.get_screen("game").play_button_click_sound()
+            self.manager.get_screen('game').set_snake_tail_color(snake_tail_color)
+            popup.dismiss()
+
+        save_button.bind(on_press=save_color)
+        
+
+        button_layout.add_widget(save_button)
+        button_layout.add_widget(cancel_button)
+
+        popup_content.add_widget(button_layout)
+
+        popup = Popup(title="Select Snake Tail Color", content=popup_content, size_hint=(None, None), size=(500, 450))
+        cancel_button.bind(on_press=popup.dismiss)
+        popup.open()
 
 
 class SnakeHead(Widget):
@@ -226,7 +260,8 @@ class SnakePlusPlusApp(App):
         return sm
 
 
-class SnakeTail(Widget):
+class SnakeTail(Widget):    
+    color = ListProperty([0.5, 1.0, 1, 1]) 
     def move(self, new_pos):
         self.pos = new_pos
 
@@ -270,7 +305,7 @@ class SnakeGame(Screen):
     last_score = NumericProperty(0)
     player_size = NumericProperty(PLAYER_SIZE)
     ck = False
-
+    color = ObjectProperty(None)
     fruit_sound = SoundLoader.load("collide+.mp3")
     poison_fruit_sound = SoundLoader.load("collide-.mp3")
     lucky_fruit_sound = SoundLoader.load("collide_lucky.mp3")
@@ -292,6 +327,10 @@ class SnakeGame(Screen):
         self.count_pause = 0
         self.sound = SoundLoader.load("background.mp3")
         self.sound_pos = None
+        self.color = [0.5, 1.0, 1, 1]
+
+    def set_snake_tail_color(self, color):
+        self.color = color            
 
     def start_game(self):
         self.last_score = 0
@@ -394,7 +433,7 @@ class SnakeGame(Screen):
                 self.fruit_sound.play()
             self.score += 1
             self.score_label.text = f"Score: {self.score}"
-            self.tail.append(SnakeTail(pos=self.head.pos, size=self.head.size))
+            self.tail.append(SnakeTail(pos=self.head.pos, size=self.head.size, color=self.color))
             self.add_widget(self.tail[-1])
             self.spawn_fruit()
 
@@ -657,6 +696,7 @@ class SnakeGame(Screen):
             SnakeTail(
                 pos=(self.head.pos[0] - PLAYER_SIZE, self.head.pos[1]),
                 size=(self.head.size),
+                color=self.color               
             )
         )
         self.add_widget(self.tail[-1])
@@ -666,11 +706,11 @@ class SnakeGame(Screen):
             SnakeTail(
                 pos=(self.head.pos[0] - 2 * PLAYER_SIZE, self.head.pos[1]),
                 size=(self.head.size),
+                color=self.color
             )
         )
         self.add_widget(self.tail[-1])
         self.occupied[self.tail[1].pos] = True
-
         self.spawn_fruit()
         self.spawn_poison_fruit()
 

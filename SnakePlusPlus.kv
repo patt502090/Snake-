@@ -67,6 +67,7 @@
     start_button: start_button
     file_chooser_button: file_chooser_button 
     exit_button : exit_button 
+    color_button : color_button 
 
     canvas.before:
         Rectangle:
@@ -117,12 +118,25 @@
         border: (10,10,10,10)
         on_press:
             root.open_filechooser()
+    
+    Button:
+        id: color_button
+        text: "เลือกสีหางงู"
+        size_hint: 0.3, 0.1
+        pos_hint: {'center_x': 0.5, 'top': 0.28}
+        background_normal: 'button2.jpg'  # ภาพปุ่มเมื่อปกติ
+        background_down: 'StartScreen.png'  # ภาพปุ่มเมื่อถูกกด
+        color: 1, 1, 1, 1  # สีของตัวอักษร (RGBA)
+        font_size: 20  # ขนาดตัวอักษร
+        font_name: 'TAGameboy-Regular'  # ชื่อแบบอักษร
+        border: (10,10,10,10)
+        on_press: root.open_color_picker()
 
     Button:  
         id: exit_button
         text: "ออกจากเกม"
         size_hint: 0.3, 0.1
-        pos_hint: {'center_x': 0.5, 'top': 0.28}
+        pos_hint: {'center_x': 0.5, 'top': 0.15}
         background_normal: 'button2.jpg'  # ภาพปุ่มเมื่อปกติ
         background_down: 'StartScreen.png'  # ภาพปุ่มเมื่อถูกกด
         color: 1, 1, 1, 1  # สีของตัวอักษร (RGBA)
@@ -144,7 +158,7 @@
 <SnakeTail>:
     canvas:
         Color:
-            rgba: (0,1,1,.8)
+            rgba: root.color
         Rectangle:
             pos: self.pos
             size: [50,50]
