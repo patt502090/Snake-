@@ -21,7 +21,7 @@ from kivy.uix.floatlayout import FloatLayout
 import os
 from kivy.uix.filechooser import FileChooserListView
 import functools
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, ListProperty
 import random
 from kivy.uix.image import AsyncImage
 from os.path import basename
@@ -60,9 +60,8 @@ class GameOverPopup(Popup):
         self.content = content_layout
 
     def pre_start(self, instance):
-        self.dismiss()        
+        self.dismiss()
         App.get_running_app().root.get_screen("start").pre_start(instance)
-    
 
     def close_and_restart(self, instance):
         self.dismiss()
@@ -84,8 +83,8 @@ class StartScreen(Screen):
     exit_button = ObjectProperty(None)
     file_chooser_popup = None
     top_score_label = None
-    
-    def pre_start(self, instance):       
+
+    def pre_start(self, instance):
         if self.background_rect is not None:
             self.canvas.before.remove(self.background_rect)
         self.start_button.opacity = 1
@@ -94,7 +93,7 @@ class StartScreen(Screen):
         self.start_button.disabled = False
         self.file_chooser_button.disabled = False
         self.exit_button.disabled = False
-        App.get_running_app().root.transition.direction = 'right'
+        App.get_running_app().root.transition.direction = "right"
         App.get_running_app().root.current = "start"
 
     def open_filechooser(self):
@@ -113,62 +112,71 @@ class StartScreen(Screen):
     def select_image(self, *args):
         selected_file = args[1]
         if selected_file:
-            image_path = selected_file[0]            
+            image_path = selected_file[0]
             image_name = basename(image_path)
-            popup_content = BoxLayout(orientation='vertical')
-            image = AsyncImage(source=image_path)  
+            popup_content = BoxLayout(orientation="vertical")
+            image = AsyncImage(source=image_path)
             popup_content.add_widget(image)
-            popup_content.add_widget(Label(text=f'{image_name}', size_hint=(1, 0.5)))  
+            popup_content.add_widget(Label(text=f"{image_name}", size_hint=(1, 0.5)))
 
             button_layout = BoxLayout(size_hint_y=None, height=50)
-            save_button = Button(text='Save')
-            cancel_button = Button(text='Cancel')
+            save_button = Button(text="Save")
+            cancel_button = Button(text="Cancel")
 
-            save_button.bind(on_press=lambda instance: self.save_image_and_close(popup, image_path))            
+            save_button.bind(
+                on_press=lambda instance: self.save_image_and_close(popup, image_path)
+            )
 
             button_layout.add_widget(save_button)
             button_layout.add_widget(cancel_button)
             popup_content.add_widget(button_layout)
-            popup = Popup(title='Save or Not?', content=popup_content,size_hint=(None, None), size=(400, 400))
+            popup = Popup(
+                title="Save or Not?",
+                content=popup_content,
+                size_hint=(None, None),
+                size=(400, 400),
+            )
             cancel_button.bind(on_press=popup.dismiss)
             popup.open()
 
-    def save_image_and_close(self, popup, image_path):       
+    def save_image_and_close(self, popup, image_path):
         self.manager.get_screen("game").update_snake_head_image(image_path)
         self.manager.get_screen("game").play_button_click_sound()
-        popup.title = 'Save image successful'  
-        self.file_chooser_popup.dismiss() 
+        popup.title = "Save image successful"
+        self.file_chooser_popup.dismiss()
         Clock.schedule_once(popup.dismiss, 0.5)
 
     def on_enter(self, *args):
         top_score = load_top_score()
         self.top_score_label.text = f"Top Score: {top_score}"
 
-    def start_game_countdown(self):        
+    def start_game_countdown(self):
         self.start_button.opacity = 0
         self.file_chooser_button.opacity = 0
         self.exit_button.opacity = 0
-        self.start_button.disabled  = True
-        self.file_chooser_button.disabled  = True
+        self.start_button.disabled = True
+        self.file_chooser_button.disabled = True
         self.exit_button.disabled = True
 
         with self.canvas.before:
             Color(0, 0, 0, 1)
             self.background_rect = Rectangle(pos=self.pos, size=self.size)
- 
+
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", "3"), 1)
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", "2"), 2)
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", "1"), 2.98)
-        Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", "Go Go Go"), 3.5)
+        Clock.schedule_once(
+            lambda dt: setattr(self.countdown_label, "text", "Go Go Go"), 3.5
+        )
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", ""), 3.69)
         Clock.schedule_once(self.start_game, 3.7)
-
 
     def start_game(self, dt):
         self.manager.current = "game"
         self.manager.get_screen("game").start_game_sound(True)
         self.manager.get_screen("game").start_game()
-        
+
+
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
     source = StringProperty("head.jpg")
@@ -250,7 +258,7 @@ def load_top_score():
 class SnakeGame(Screen):
     fruit = ObjectProperty(None)
     poison_fruit = ObjectProperty(None)
-    lucky_fruit = ObjectProperty(None)
+    lucky_fruit = ListProperty([])
     head = ObjectProperty(None)
     sound = None
     muted = False
@@ -281,7 +289,6 @@ class SnakeGame(Screen):
         self.sound = SoundLoader.load("background.mp3")
         self.sound_pos = None
 
-
     def start_game(self):
         self.last_score = 0
         self.timer = Clock.schedule_interval(self.refresh, SPEED)
@@ -292,7 +299,7 @@ class SnakeGame(Screen):
             StartScreen.top_score_label.text = f"Top Score: {top_score}"
 
     def refresh(self, dt):
-        if self.score == 2:
+        if self.score == 2 and not self.lucky_fruit:
             self.spawn_lucky_fruit()
 
         if self.score <= 5 and self.score % 5 == 0 and self.score != self.last_score:
@@ -392,7 +399,6 @@ class SnakeGame(Screen):
                 self.poison_fruit_sound.play()
             self.score -= 3
             self.score_label.text = f"Score: {self.score}"
-            # เช็คว่า score น้อยกว่า 0 หรือไม่ หากน้อยกว่าให้ game over
             if self.score < 0:
                 self.break_game()
             else:
@@ -407,7 +413,7 @@ class SnakeGame(Screen):
 
                 self.spawn_poison_fruit()
 
-        elif self.lucky_fruit and self.head.pos == self.lucky_fruit.pos:
+        elif any(self.head.pos == fruit.pos for fruit in self.lucky_fruit):
             if self.lucky_fruit_sound:
                 self.lucky_fruit_sound.play()
             score_change = randint(-5, 5)
@@ -417,29 +423,28 @@ class SnakeGame(Screen):
                 self.break_game()
             else:
                 tail_change = randint(1, 3)
-                for _ in range(abs(tail_change)):
-                    if tail_change > 0:  # เพิ่มหาง
-                        self.tail.append(
-                            SnakeTail(
-                                pos=(
-                                    self.head.pos[0] + len(self.tail) * PLAYER_SIZE,
-                                    self.head.pos[1],
-                                ),
-                                size=self.head.size,
-                            )
+                if tail_change > 0:
+                    for _ in range(tail_change):
+                        new_tail_pos = (
+                            self.head.pos[0] + len(self.tail) * PLAYER_SIZE,
+                            self.head.pos[1],
                         )
-                        self.add_widget(self.tail[-1])
-                        self.occupied[self.tail[-1].pos] = True
-                    elif tail_change < 0:  # ลดหาง
+                        new_tail = SnakeTail(pos=new_tail_pos, size=self.head.size)
+                        self.tail.append(new_tail)
+                        self.add_widget(new_tail)
+                        self.occupied[new_tail_pos] = True
+                elif tail_change < 0:
+                    for _ in range(abs(tail_change)):
                         if len(self.tail) > 0:
-                            removed_tail_count = min(abs(tail_change), len(self.tail))
-                            for _ in range(removed_tail_count):
-                                removed_tail = self.tail.pop()
-                                self.remove_widget(removed_tail)
-                                self.occupied[removed_tail.pos] = False
+                            removed_tail = self.tail.pop()
+                            self.remove_widget(removed_tail)
+                            self.occupied[removed_tail.pos] = False
 
-            self.remove_widget(self.lucky_fruit)
-            self.lucky_fruit = None
+            # ลบผลไม้โชคดีที่ชนออกจากการแสดงผล
+            for fruit in self.lucky_fruit:
+                self.remove_widget(fruit)
+            self.lucky_fruit = []
+
 
         if self.count_pause >= 7:
             self.timer.cancel()
@@ -512,16 +517,15 @@ class SnakeGame(Screen):
     def stop_sound(self):
         self.sound.stop()
 
-    def start_game_sound(self,status):
+    def start_game_sound(self, status):
         self.sound.play()
-        self.sound.loop = True        
-        if status:            
+        self.sound.loop = True
+        if status:
             self.muted = False
         if not self.muted:
             self.sound.volume = 0.5
         else:
             self.sound.volume = 0
-
 
     def toggle_sound(self, instance):
         if self.sound:
@@ -533,7 +537,7 @@ class SnakeGame(Screen):
                 self.muted = True
                 self.mute_button.text = "Unmute"
             else:
-                if self.timer.is_triggered:                    
+                if self.timer.is_triggered:
                     self.sound.volume = 0.5
                     self.fruit_sound.volume = 0.5
                     self.gameOver_sound.volume = 0.5
@@ -582,9 +586,10 @@ class SnakeGame(Screen):
         self.poison_fruit.move(roll)
 
     def spawn_lucky_fruit(self):
-        if self.lucky_fruit is None:
-            self.lucky_fruit = LuckyFruit()
-            self.add_widget(self.lucky_fruit)
+
+        new_lucky_fruit = LuckyFruit()
+        self.lucky_fruit.append(new_lucky_fruit)
+        self.add_widget(new_lucky_fruit)
 
         found = False
         while not found:
@@ -599,7 +604,11 @@ class SnakeGame(Screen):
                 and roll != self.poison_fruit.pos
             ):
                 found = True
-        self.lucky_fruit.move(roll)
+            if roll[1] == 0:
+                found = False
+            if roll[0] == 1050:
+                found = False
+        new_lucky_fruit.move(roll)
 
     def break_game(self):
         score_popup = GameOverPopup(score=self.score, game_instance=self)
@@ -612,7 +621,9 @@ class SnakeGame(Screen):
         self.mute_button.disabled = True
         self.pause.disabled = True
         if self.lucky_fruit:
-            self.remove_widget(self.lucky_fruit)
+            for fruit in self.lucky_fruit:
+                self.remove_widget(fruit)  
+            self.lucky_fruit = [] 
         if self.score > load_top_score():
             save_top_score(self.score)
 
