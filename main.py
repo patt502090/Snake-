@@ -23,6 +23,8 @@ from kivy.uix.filechooser import FileChooserListView
 import functools
 from kivy.properties import StringProperty
 import random
+from kivy.uix.image import AsyncImage
+from os.path import basename
 
 Config.set("graphics", "width", "900")
 Config.set("graphics", "height", "600")
@@ -111,11 +113,32 @@ class StartScreen(Screen):
     def select_image(self, *args):
         selected_file = args[1]
         if selected_file:
-            image_path = selected_file[0]
-            print(image_path)
-            self.manager.get_screen("game").update_snake_head_image(image_path)
-            self.manager.get_screen("game").play_button_click_sound()
-            self.file_chooser_popup.dismiss()
+            image_path = selected_file[0]            
+            image_name = basename(image_path)
+            popup_content = BoxLayout(orientation='vertical')
+            image = AsyncImage(source=image_path)  
+            popup_content.add_widget(image)
+            popup_content.add_widget(Label(text=f'{image_name}', size_hint=(1, 0.5)))  
+
+            button_layout = BoxLayout(size_hint_y=None, height=50)
+            save_button = Button(text='Save')
+            cancel_button = Button(text='Cancel')
+
+            save_button.bind(on_press=lambda instance: self.save_image_and_close(popup, image_path))            
+
+            button_layout.add_widget(save_button)
+            button_layout.add_widget(cancel_button)
+            popup_content.add_widget(button_layout)
+            popup = Popup(title='Save or Not?', content=popup_content,size_hint=(None, None), size=(400, 400))
+            cancel_button.bind(on_press=popup.dismiss)
+            popup.open()
+
+    def save_image_and_close(self, popup, image_path):       
+        self.manager.get_screen("game").update_snake_head_image(image_path)
+        self.manager.get_screen("game").play_button_click_sound()
+        popup.title = 'Save image successful'  
+        self.file_chooser_popup.dismiss() 
+        Clock.schedule_once(popup.dismiss, 0.5)
 
     def on_enter(self, *args):
         top_score = load_top_score()
