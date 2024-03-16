@@ -5,7 +5,6 @@ from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.core.audio import SoundLoader
-from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics import Color, Rectangle
@@ -13,11 +12,9 @@ from kivy.properties import NumericProperty
 from random import randint
 from kivy.vector import Vector
 from kivy.config import Config
-from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.clock import Clock
 from kivy.uix.popup import Popup
-from kivy.uix.floatlayout import FloatLayout
 import os
 from kivy.uix.filechooser import FileChooserListView
 import functools
@@ -26,6 +23,8 @@ import random
 from kivy.uix.image import AsyncImage
 from os.path import basename
 from kivy.uix.colorpicker import ColorPicker
+from gameover import GameOverPopup
+from smartgrid import smartGrid
 
 Config.set("graphics", "width", "900")
 Config.set("graphics", "height", "600")
@@ -35,46 +34,6 @@ WINDOW_WIDTH = 900
 PLAYER_SIZE = 50
 SPEED = 0.155
 TOP_SCORE_FILE = "top_score.txt"
-
-
-class GameOverPopup(Popup):
-    def __init__(self, score, game_instance, **kwargs):
-        super(GameOverPopup, self).__init__(**kwargs)
-        self.title = "Game Over"
-        self.size_hint = (None, None)
-        self.size = (400, 300)
-        self.game_instance = game_instance
-
-        content_layout = BoxLayout(orientation="vertical")
-
-        score_label = "Your Score: {}".format(max(score, 0))
-        content_layout.add_widget(Label(text=score_label))
-
-        close_button = Button(text="Restart Game")
-        close_button.bind(on_press=self.close_and_restart)
-
-        pre_button = Button(text="Back to Home Screen")
-        pre_button.bind(on_press=self.pre_start)
-        content_layout.add_widget(pre_button)
-        content_layout.add_widget(close_button)
-
-        self.content = content_layout
-
-    def pre_start(self, instance):
-        self.dismiss()                
-        App.get_running_app().root.get_screen("start").pre_start(instance,self.game_instance.muted)
-    
-
-    def close_and_restart(self, instance):
-        self.dismiss()
-        self.game_instance.start_game_sound(False)
-        self.game_instance.start_game()
-
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
-            return super().on_touch_down(touch)
-        else:
-            return False
 
 
 class StartScreen(Screen):
@@ -265,21 +224,6 @@ class SnakeTail(Widget):
     def move(self, new_pos):
         self.pos = new_pos
 
-
-class smartGrid:
-    def __init__(self):
-        self.grid = [[False for i in range(WINDOW_HEIGHT)] for j in range(WINDOW_WIDTH)]
-
-    def __getitem__(self, coords):
-        return self.grid[coords[0]][coords[1]]
-
-    def __setitem__(self, coords, value):
-        if 0 <= coords[0] < WINDOW_WIDTH and 0 <= coords[1] < WINDOW_HEIGHT:
-            self.grid[coords[0]][coords[1]] = value
-        else:
-            print("Index out of range:", coords)
-
-
 def save_top_score(score):
     with open(TOP_SCORE_FILE, "w") as file:
         file.write(str(score))
@@ -306,10 +250,10 @@ class SnakeGame(Screen):
     player_size = NumericProperty(PLAYER_SIZE)
     ck = False
     color = ObjectProperty(None)
-    fruit_sound = SoundLoader.load("collide+.mp3")
-    poison_fruit_sound = SoundLoader.load("collide-.mp3")
-    lucky_fruit_sound = SoundLoader.load("collide_lucky.mp3")
-    gameOver_sound = SoundLoader.load("gameOver.mp3")
+    fruit_sound = SoundLoader.load("sounds/collide+.mp3")
+    poison_fruit_sound = SoundLoader.load("sounds/collide-.mp3")
+    lucky_fruit_sound = SoundLoader.load("sounds/collide_lucky.mp3")
+    gameOver_sound = SoundLoader.load("sounds/gameOver.mp3")
 
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
@@ -325,7 +269,7 @@ class SnakeGame(Screen):
 
         self.tail = []
         self.count_pause = 0
-        self.sound = SoundLoader.load("background.mp3")
+        self.sound = SoundLoader.load("sounds/background.mp3")
         self.sound_pos = None
         self.color = [0.5, 1.0, 1, 1]
 
@@ -499,7 +443,7 @@ class SnakeGame(Screen):
             self.timer = Clock.schedule_interval(self.refresh, 0.127)
 
     def play_button_click_sound(self):
-        button_click_sound = SoundLoader.load("clickbutton.wav")
+        button_click_sound = SoundLoader.load("sounds/clickbutton.wav")
         button_click_sound.volume = 0.28
         if button_click_sound:
             button_click_sound.play()
@@ -578,6 +522,7 @@ class SnakeGame(Screen):
                 self.fruit_sound.volume = 0
                 self.gameOver_sound.volume = 0
                 self.poison_fruit_sound.volume = 0
+                self.lucky_fruit_sound.volume = 0
                 self.muted = True
                 self.mute_button.text = "Unmute"
             else:
@@ -586,6 +531,7 @@ class SnakeGame(Screen):
                     self.fruit_sound.volume = 0.5
                     self.gameOver_sound.volume = 0.5
                     self.poison_fruit_sound.volume = 0.5
+                    self.lucky_fruit_sound.volume = 0.5
                     self.muted = False
                     self.mute_button.text = "Mute"
 
