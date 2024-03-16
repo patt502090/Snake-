@@ -217,7 +217,7 @@ class StartScreen(Screen):
 
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
-    source = StringProperty("head.jpg")
+    source = StringProperty("snake2.png")
 
     def reset_pos(self):
         """
@@ -427,7 +427,6 @@ class SnakeGame(Screen):
 
         self.head.move()
 
-        # ตรวจสอบว่าเราพบผลไม้หรือไม่ หากพบ ให้เพิ่มอีกหาง
         if self.head.pos == self.fruit.pos:
             if self.fruit_sound:
                 self.fruit_sound.play()
@@ -483,7 +482,7 @@ class SnakeGame(Screen):
                             self.remove_widget(removed_tail)
                             self.occupied[removed_tail.pos] = False
 
-            # ลบผลไม้โชคดีที่ชนออกจากการแสดงผล
+            # ลบ lucky fruit ที่ชนออกจากการแสดงผล
             for fruit in self.lucky_fruit:
                 self.remove_widget(fruit)
             self.lucky_fruit = []
