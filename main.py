@@ -60,8 +60,8 @@ class GameOverPopup(Popup):
         self.content = content_layout
 
     def pre_start(self, instance):
-        self.dismiss()        
-        App.get_running_app().root.get_screen("start").pre_start(instance)
+        self.dismiss()                
+        App.get_running_app().root.get_screen("start").pre_start(instance,self.game_instance.muted)
     
 
     def close_and_restart(self, instance):
@@ -84,8 +84,9 @@ class StartScreen(Screen):
     exit_button = ObjectProperty(None)
     file_chooser_popup = None
     top_score_label = None
+    muted = False
     
-    def pre_start(self, instance):       
+    def pre_start(self, instance,muted):       
         if self.background_rect is not None:
             self.canvas.before.remove(self.background_rect)
         self.start_button.opacity = 1
@@ -93,6 +94,7 @@ class StartScreen(Screen):
         self.exit_button.opacity = 1
         self.start_button.disabled = False
         self.file_chooser_button.disabled = False
+        self.muted = muted
         self.exit_button.disabled = False
         App.get_running_app().root.transition.direction = 'right'
         App.get_running_app().root.current = "start"
@@ -166,7 +168,8 @@ class StartScreen(Screen):
 
     def start_game(self, dt):
         self.manager.current = "game"
-        self.manager.get_screen("game").start_game_sound(True)
+        sound = not self.muted        
+        self.manager.get_screen("game").start_game_sound(sound)
         self.manager.get_screen("game").start_game()
         
 class SnakeHead(Widget):
@@ -356,7 +359,7 @@ class SnakeGame(Screen):
             self.spawn_poison_fruit()
 
         if not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (
-            0 <= self.head.pos[1] < WINDOW_HEIGHT
+            20 <= self.head.pos[1] < WINDOW_HEIGHT
         ):
             self.break_game()
             return
@@ -453,6 +456,7 @@ class SnakeGame(Screen):
 
     def play_button_click_sound(self):
         button_click_sound = SoundLoader.load("clickbutton.wav")
+        button_click_sound.volume = 0.28
         if button_click_sound:
             button_click_sound.play()
 
@@ -520,6 +524,7 @@ class SnakeGame(Screen):
         if not self.muted:
             self.sound.volume = 0.5
         else:
+            self.mute_button.text = "Unmute"
             self.sound.volume = 0
 
 
