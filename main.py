@@ -120,6 +120,7 @@ class StartScreen(Screen):
     def start_game_countdown(self):
         self.start_button.opacity = 0
         self.file_chooser_button.opacity = 0
+        self.top_score_label.opacity = 0
         self.exit_button.opacity = 0
         self.start_button.disabled = True
         self.file_chooser_button.disabled = True
