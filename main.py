@@ -63,6 +63,7 @@ class StartScreen(Screen):
         self.exit_button.disabled = False
         self.color_button.disabled = False
         self.color_button.opacity = 1
+        self.top_score_label.opacity = 1
         App.get_running_app().root.transition.direction = "right"
         App.get_running_app().root.current = "start"
 
@@ -192,8 +193,8 @@ class StartScreen(Screen):
 
 # กำหนดหน้าจอเกม
 class SnakeHead(Widget):
-    orientation = (PLAYER_SIZE, 0) # กำหนดทิศทางเริ่มต้นของหัวงู
-    source = StringProperty("snake2.png") # กำหนดรูปภาพของหัวงู
+    orientation = (PLAYER_SIZE, 0)  # กำหนดทิศทางเริ่มต้นของหัวงู
+    source = StringProperty("image/snake2.png")  # กำหนดรูปภาพของหัวงู
 
     def reset_pos(self):
         # รีเซ็ตตำแหน่งของหัวงูไปที่กลางของหน้าต่างหรือวางตำแหน่งผู้เล่นไว้ตรงกลางกระดานเกม
@@ -201,7 +202,7 @@ class SnakeHead(Widget):
             int(Window.width / 2 - (Window.width / 2 % PLAYER_SIZE)),
             int(Window.height / 2 - (Window.height / 2 % PLAYER_SIZE)),
         ]
-        self.orientation = (PLAYER_SIZE, 0) # รีเซ็ตทิศทางของหัวงูให้เป็นเริ่มต้นอีกครั้ง
+        self.orientation = (PLAYER_SIZE, 0)  # รีเซ็ตทิศทางของหัวงูให้เป็นเริ่มต้นอีกครั้ง
 
     def move(self):
         # เลื่อนหัวงูไปในทิศทางที่ระบุโดย 'orientation' โดยการเคลื่อนที่ด้วย Vector
@@ -287,7 +288,7 @@ class SnakeGame(Screen):
 
         if PLAYER_SIZE < 3:
             raise ValueError("ขนาดโปรแกรมเล่นควรมีอย่างน้อย 3 px")
-        
+
         if WINDOW_HEIGHT < 3 * PLAYER_SIZE or WINDOW_WIDTH < 3 * PLAYER_SIZE:
             raise ValueError("ขนาดหน้าต่างต้องมีขนาดใหญ่กว่าขนาดเครื่องเล่นอย่างน้อย 3 เท่า")
 
@@ -482,10 +483,8 @@ class SnakeGame(Screen):
             self.timer.cancel()
             self.timer = Clock.schedule_interval(self.refresh, 0.127)
 
-        print("score", self.score)
-        print("top", self.top_score)
-
-        # ส่วนของการอัปเดตคะแนนสูงสุด
+        # print("score", self.score)
+        # print("top", self.top_score)
         if self.score > self.top_score:
             self.top_score = self.score
             self.top_score_label.text = (
