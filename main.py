@@ -37,7 +37,9 @@ SPEED = 0.155
 TOP_SCORE_FILE = "top_score.txt"
 
 
+# กำหนดหน้าจอเริ่มต้น
 class StartScreen(Screen):
+    # ส่วนต่าง ๆ ของหน้าจอเริ่มต้น
     countdown_label = ObjectProperty(None)
     start_button = ObjectProperty(None)
     top_score_label = ObjectProperty(None)
@@ -48,6 +50,7 @@ class StartScreen(Screen):
     top_score_label = None
     muted = False
 
+    # เริ่มต้นเกม
     def pre_start(self, instance, muted):
         if self.background_rect is not None:
             self.canvas.before.remove(self.background_rect)
@@ -63,6 +66,7 @@ class StartScreen(Screen):
         App.get_running_app().root.transition.direction = "right"
         App.get_running_app().root.current = "start"
 
+    # เปิด file chooser เพื่อเลือกรูปภาพ
     def open_filechooser(self):
         self.file_chooser = FileChooserListView(filters=["*.jpg", "*.png"])
         self.file_chooser.bind(on_submit=functools.partial(self.select_image))
@@ -76,6 +80,7 @@ class StartScreen(Screen):
         self.file_chooser_popup.content.add_widget(close_button)
         self.file_chooser_popup.open()
 
+    # เลือกรูปภาพและบันทึก
     def select_image(self, *args):
         selected_file = args[1]
         if selected_file:
@@ -106,6 +111,7 @@ class StartScreen(Screen):
             cancel_button.bind(on_press=popup.dismiss)
             popup.open()
 
+    # บันทึกรูปและปิด popup
     def save_image_and_close(self, popup, image_path):
         self.manager.get_screen("game").update_snake_head_image(image_path)
         self.manager.get_screen("game").play_button_click_sound()
@@ -113,10 +119,12 @@ class StartScreen(Screen):
         self.file_chooser_popup.dismiss()
         Clock.schedule_once(popup.dismiss, 0.5)
 
+    # เมื่อเข้าหน้าจอ
     def on_enter(self, *args):
         top_score = load_top_score()
         self.top_score_label.text = f"Top Score: {top_score}"
 
+    # เริ่มนับถอยหลังก่อนเริ่มเกม
     def start_game_countdown(self):
         self.start_button.opacity = 0
         self.file_chooser_button.opacity = 0
@@ -141,12 +149,14 @@ class StartScreen(Screen):
         Clock.schedule_once(lambda dt: setattr(self.countdown_label, "text", ""), 3.69)
         Clock.schedule_once(self.start_game, 3.7)
 
+    # เริ่มเกม
     def start_game(self, dt):
         self.manager.current = "game"
         sound = not self.muted
         self.manager.get_screen("game").sound_control.start_game_sound(sound)
         self.manager.get_screen("game").start_game()
 
+    # เปิด color picker เพื่อเลือกสีหางงู
     def open_color_picker(self):
         popup_content = BoxLayout(orientation="vertical")
 
@@ -180,6 +190,7 @@ class StartScreen(Screen):
         popup.open()
 
 
+# กำหนดหน้าจอเกม
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
     source = StringProperty("snake2.png")
@@ -212,13 +223,15 @@ class LuckyFruit(Widget):
         self.pos = new_pos
 
 
+# ฟังก์ชันหลักของโปรแกรม
 class SnakePlusPlusApp(App):
+    # สร้างแอป
     def build(self):
         Window.size = (900, 600)
         sm = ScreenManager()
         sm.add_widget(StartScreen(name="start"))
         sm.add_widget(SnakeGame(name="game"))
-        
+
         return sm
 
 
@@ -244,6 +257,7 @@ def load_top_score():
 
 
 class SnakeGame(Screen):
+    # ส่วนต่าง ๆ ของหน้าจอเกม
     fruit = ObjectProperty(None)
     poison_fruit = ObjectProperty(None)
     lucky_fruit = ListProperty([])
@@ -258,6 +272,7 @@ class SnakeGame(Screen):
     color = ObjectProperty(None)
     sound_control = SoundControl()
 
+    # กำหนดค่าเริ่มต้น
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
         Window.size = (WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -278,9 +293,11 @@ class SnakeGame(Screen):
         self.pauses = False
         self.initial_random_score = randint(1, 8)
 
+    # กำหนดสีของหางงู
     def set_snake_tail_color(self, color):
         self.color = color
 
+    # เริ่มเกม
     def start_game(self):
         self.last_score = 0
         self.timer = Clock.schedule_interval(self.refresh, SPEED)
@@ -289,6 +306,7 @@ class SnakeGame(Screen):
         if self.manager.current == "start" and StartScreen.top_score_label:
             StartScreen.top_score_label.text = f"Top Score: {self.top_score}"
 
+    # อัปเดตสถานะของเกม
     def refresh(self, dt):
         if self.score == self.initial_random_score and not self.lucky_fruit:
             self.initial_random_score = randint(self.score + 1, self.score + 8)
@@ -386,7 +404,6 @@ class SnakeGame(Screen):
             )
             self.add_widget(self.tail[-1])
             self.spawn_fruit()
-            
 
         elif self.poison_fruit and self.head.pos == self.poison_fruit.pos:
             if self.sound_control.poison_fruit_sound:
@@ -448,13 +465,14 @@ class SnakeGame(Screen):
         elif self.score >= 5:
             self.timer.cancel()
             self.timer = Clock.schedule_interval(self.refresh, 0.127)
-            
-        print("score",self.score)
-        print("top",self.top_score)
+
+        print("score", self.score)
+        print("top", self.top_score)
         if self.score > self.top_score:
             self.top_score = self.score
             self.top_score_label.text = f"Top Score: {str(self.score)}"
 
+    # เล่นเสียงการคลิกปุ่ม และแสดงแถบคะแนน
     def play_button_click_sound(self):
         button_click_sound = SoundLoader.load("sounds/clickbutton.wav")
         button_click_sound.volume = 0.28
@@ -482,7 +500,10 @@ class SnakeGame(Screen):
 
         # Top Score label
         self.top_score_label = Label(
-            text=f"Top Score: {self.top_score}", size_hint=(None, None), height=50, width=300
+            text=f"Top Score: {self.top_score}",
+            size_hint=(None, None),
+            height=50,
+            width=300,
         )
         self.score_box.add_widget(self.top_score_label)
 
@@ -500,6 +521,7 @@ class SnakeGame(Screen):
             Window.height - self.mute_button.height,
         )
 
+    # หยุดเกมหรือเริ่มเกมใหม่
     def pause_game(self, instance):
         if self.timer.is_triggered:
             self.pauses = True
@@ -513,9 +535,11 @@ class SnakeGame(Screen):
             if not self.muted:
                 self.sound.volume = 0.5
 
+    # เปิดหรือปิดเสียง
     def toggle_sound(self, instance):
         self.sound_control.toggle_sound(self.pauses, instance)
 
+    # สร้างผลแอปเปิ้ล
     def spawn_fruit(self):
         roll = self.fruit.pos
         found = False
@@ -533,6 +557,7 @@ class SnakeGame(Screen):
                 found = False
         self.fruit.move(roll)
 
+    # สร้างผลพิษ
     def spawn_poison_fruit(self):
         if self.poison_fruit is None:
             self.poison_fruit = PoisonFruit()
@@ -556,8 +581,8 @@ class SnakeGame(Screen):
                 found = False
         self.poison_fruit.move(roll)
 
+    # สร้างผลลุ้นโชค
     def spawn_lucky_fruit(self):
-
         new_lucky_fruit = LuckyFruit()
         self.lucky_fruit.append(new_lucky_fruit)
         self.add_widget(new_lucky_fruit)
@@ -582,6 +607,7 @@ class SnakeGame(Screen):
                 found = False
         new_lucky_fruit.move(roll)
 
+    # จบเกม
     def break_game(self):
         score_popup = GameOverPopup(
             score=self.score, game_instance=self, muted=self.sound_control.muted
@@ -608,9 +634,11 @@ class SnakeGame(Screen):
 
         self.lucky_number = -1
 
+    # อัปเดตรูปภาพของหัวงู
     def update_snake_head_image(self, image_source):
         self.head.source = image_source
 
+    # เริ่มเกมใหม่
     def restart_game(self):
         self.count_pause = 0
         self.pause.disabled = False
@@ -644,7 +672,7 @@ class SnakeGame(Screen):
         self.spawn_fruit()
         self.spawn_poison_fruit()
 
-
+    # รับคำสั่งจากแป้นพิมพ์
     def key_action(self, *args):
         command = list(args)[3]
         if command == "w" or command == "up":
@@ -655,9 +683,8 @@ class SnakeGame(Screen):
             self.head.orientation = (-PLAYER_SIZE, 0)
         elif command == "d" or command == "right":
             self.head.orientation = (PLAYER_SIZE, 0)
-        elif command == "r":
-            self.restart_game()
 
 
 if __name__ == "__main__":
+    # รันแอป
     SnakePlusPlusApp().run()
