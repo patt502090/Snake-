@@ -218,6 +218,7 @@ class SnakePlusPlusApp(App):
         sm = ScreenManager()
         sm.add_widget(StartScreen(name="start"))
         sm.add_widget(SnakeGame(name="game"))
+        
         return sm
 
 
@@ -251,6 +252,7 @@ class SnakeGame(Screen):
     muted = False
     score = NumericProperty(0)
     last_score = NumericProperty(0)
+    top_score = NumericProperty(load_top_score())
     player_size = NumericProperty(PLAYER_SIZE)
     ck = False
     color = ObjectProperty(None)
@@ -284,9 +286,8 @@ class SnakeGame(Screen):
         self.timer = Clock.schedule_interval(self.refresh, SPEED)
         self.tail = []
         self.restart_game()
-        top_score = load_top_score()
         if self.manager.current == "start" and StartScreen.top_score_label:
-            StartScreen.top_score_label.text = f"Top Score: {top_score}"
+            StartScreen.top_score_label.text = f"Top Score: {self.top_score}"
 
     def refresh(self, dt):
         if self.score == self.initial_random_score and not self.lucky_fruit:
@@ -385,6 +386,7 @@ class SnakeGame(Screen):
             )
             self.add_widget(self.tail[-1])
             self.spawn_fruit()
+            
 
         elif self.poison_fruit and self.head.pos == self.poison_fruit.pos:
             if self.sound_control.poison_fruit_sound:
@@ -446,6 +448,12 @@ class SnakeGame(Screen):
         elif self.score >= 5:
             self.timer.cancel()
             self.timer = Clock.schedule_interval(self.refresh, 0.127)
+            
+        print("score",self.score)
+        print("top",self.top_score)
+        if self.score > self.top_score:
+            self.top_score = self.score
+            self.top_score_label.text = f"Top Score: {str(self.score)}"
 
     def play_button_click_sound(self):
         button_click_sound = SoundLoader.load("sounds/clickbutton.wav")
@@ -473,13 +481,10 @@ class SnakeGame(Screen):
         self.score_box.add_widget(self.score_label)
 
         # Top Score label
-        top_score = load_top_score()
-        if top_score < self.score:
-            top_score = self.score
-        top_score_label = Label(
-            text=f"Top Score: {top_score}", size_hint=(None, None), height=50
+        self.top_score_label = Label(
+            text=f"Top Score: {self.top_score}", size_hint=(None, None), height=50
         )
-        self.score_box.add_widget(top_score_label)
+        self.score_box.add_widget(self.top_score_label)
 
         # Mute button
         self.mute_button = Button(text="Mute", size_hint=(None, None), size=(70, 50))
@@ -557,7 +562,7 @@ class SnakeGame(Screen):
         self.lucky_fruit.append(new_lucky_fruit)
         self.add_widget(new_lucky_fruit)
         if self.sound_control.spawn_lucky_fruit_sound:
-                self.sound_control.spawn_lucky_fruit_sound.play()
+            self.sound_control.spawn_lucky_fruit_sound.play()
         found = False
         while not found:
             roll = [
@@ -598,6 +603,7 @@ class SnakeGame(Screen):
 
         # รีเซ็ต Score ไปเป็น 0 หลังจาก brake
         self.score = 0
+        self.last_score = 0
         self.score_label.text = f"Score: {self.score}"
 
         self.lucky_number = -1
@@ -637,6 +643,7 @@ class SnakeGame(Screen):
         self.occupied[self.tail[1].pos] = True
         self.spawn_fruit()
         self.spawn_poison_fruit()
+
 
     def key_action(self, *args):
         command = list(args)[3]
