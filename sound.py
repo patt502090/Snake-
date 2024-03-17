@@ -7,6 +7,7 @@ class SoundControl:
         self.poison_fruit_sound = SoundLoader.load("sounds/collide-.mp3")
         self.lucky_fruit_sound = SoundLoader.load("sounds/collide_lucky.mp3")
         self.gameOver_sound = SoundLoader.load("sounds/gameOver.mp3")
+        self.spawn_lucky_fruit_sound = SoundLoader.load("sounds/spawn_lucky.mp3")
         self.sound = SoundLoader.load("sounds/background.mp3")
     def start_game_sound(self, status):        
         self.sound.play()
@@ -31,6 +32,7 @@ class SoundControl:
                 self.gameOver_sound.volume = 0
                 self.poison_fruit_sound.volume = 0
                 self.lucky_fruit_sound.volume = 0
+                self.spawn_lucky_fruit_sound.volume = 0
                 self.muted = True  
                 instance.text = "Unmute"     
             else:
@@ -40,6 +42,7 @@ class SoundControl:
                     self.gameOver_sound.volume = 0.5
                     self.poison_fruit_sound.volume = 0.5
                     self.lucky_fruit_sound.volume = 0.5
+                    self.spawn_lucky_fruit_sound.volume = 1
                     instance.text = "mute"
                     self.muted = False     
 
