@@ -192,34 +192,37 @@ class StartScreen(Screen):
 
 # กำหนดหน้าจอเกม
 class SnakeHead(Widget):
-    orientation = (PLAYER_SIZE, 0)
-    source = StringProperty("snake2.png")
+    orientation = (PLAYER_SIZE, 0) # กำหนดทิศทางเริ่มต้นของหัวงู
+    source = StringProperty("snake2.png") # กำหนดรูปภาพของหัวงู
 
     def reset_pos(self):
-        # รีเซ็ตตำแหน่งของหัวงูไปที่กลางของหน้าต่าง. หรือ วางตำแหน่งผู้เล่นไว้ตรงกลางกระดานเกม
+        # รีเซ็ตตำแหน่งของหัวงูไปที่กลางของหน้าต่างหรือวางตำแหน่งผู้เล่นไว้ตรงกลางกระดานเกม
         self.pos = [
             int(Window.width / 2 - (Window.width / 2 % PLAYER_SIZE)),
             int(Window.height / 2 - (Window.height / 2 % PLAYER_SIZE)),
         ]
-        self.orientation = (PLAYER_SIZE, 0)
+        self.orientation = (PLAYER_SIZE, 0) # รีเซ็ตทิศทางของหัวงูให้เป็นเริ่มต้นอีกครั้ง
 
     def move(self):
-        # เลื่อนหัวงูไปในทิศทางที่ระบุโดย 'orientation'.
+        # เลื่อนหัวงูไปในทิศทางที่ระบุโดย 'orientation' โดยการเคลื่อนที่ด้วย Vector
         self.pos = Vector(*self.orientation) + self.pos
 
 
 class Fruit(Widget):
     def move(self, new_pos):
+        # เคลื่อนย้ายตำแหน่งของผลแอปเปิ้ลไปยังตำแหน่งใหม่ที่กำหนด
         self.pos = new_pos
 
 
 class PoisonFruit(Widget):
     def move(self, new_pos):
+        # เคลื่อนย้ายตำแหน่งของผลพิษไปยังตำแหน่งใหม่ที่กำหนด
         self.pos = new_pos
 
 
 class LuckyFruit(Widget):
     def move(self, new_pos):
+        # เคลื่อนย้ายตำแหน่งของผลลุ้นโชคไปยังตำแหน่งใหม่ที่กำหนด
         self.pos = new_pos
 
 
@@ -239,15 +242,18 @@ class SnakeTail(Widget):
     color = ListProperty([0.5, 1.0, 1, 1])
 
     def move(self, new_pos):
+        # เคลื่อนย้ายตำแหน่งของหางงูไปยังตำแหน่งใหม่
         self.pos = new_pos
 
 
 def save_top_score(score):
+    # บันทึกคะแนนสูงสุดลงในไฟล์
     with open(TOP_SCORE_FILE, "w") as file:
         file.write(str(score))
 
 
 def load_top_score():
+    # โหลดคะแนนสูงสุดจากไฟล์หากมี
     if os.path.exists(TOP_SCORE_FILE):
         with open(TOP_SCORE_FILE, "r") as file:
             content = file.read().strip()
@@ -281,7 +287,7 @@ class SnakeGame(Screen):
 
         if PLAYER_SIZE < 3:
             raise ValueError("ขนาดโปรแกรมเล่นควรมีอย่างน้อย 3 px")
-
+        
         if WINDOW_HEIGHT < 3 * PLAYER_SIZE or WINDOW_WIDTH < 3 * PLAYER_SIZE:
             raise ValueError("ขนาดหน้าต่างต้องมีขนาดใหญ่กว่าขนาดเครื่องเล่นอย่างน้อย 3 เท่า")
 
@@ -291,6 +297,8 @@ class SnakeGame(Screen):
         self.sound_pos = None
         self.color = [0.5, 1.0, 1, 1]
         self.pauses = False
+
+        # กำหนดค่าคะแนนเริ่มต้นสำหรับการสุ่มเกิดผลลุ้นโชคแรก
         self.initial_random_score = randint(1, 8)
 
     # กำหนดสีของหางงู
@@ -300,18 +308,21 @@ class SnakeGame(Screen):
     # เริ่มเกม
     def start_game(self):
         self.last_score = 0
+        # เริ่มต้นการตั้งเวลาในการอัปเดตสถานะเกมด้วยความเร็ว SPEED
         self.timer = Clock.schedule_interval(self.refresh, SPEED)
+        # ล้างหางของงูและเริ่มเกมใหม่
         self.tail = []
         self.restart_game()
-        if self.manager.current == "start" and StartScreen.top_score_label:
-            StartScreen.top_score_label.text = f"Top Score: {self.top_score}"
 
-    # อัปเดตสถานะของเกม
+    # อัปเดตสถานะของเกมโดยตรวจสอบคะแนนและตำแหน่งของสิ่งต่าง ๆ
     def refresh(self, dt):
+
+        # ส่วนของการสุ่มการเกิดผลลุ้นโชค
         if self.score == self.initial_random_score and not self.lucky_fruit:
             self.initial_random_score = randint(self.score + 1, self.score + 8)
             self.spawn_lucky_fruit()
 
+        # ส่วนของการสุ่มการเกิดผลพิษ
         if self.score <= 5 and self.score % 5 == 0 and self.score != self.last_score:
             self.last_score = self.score
             self.spawn_poison_fruit()
@@ -372,6 +383,7 @@ class SnakeGame(Screen):
             self.last_score = self.score
             self.spawn_poison_fruit()
 
+        # ตรวจสอบว่าหัวงูชนขอบเขตหรือกินตัวเองหรือไม่
         if not (0 <= self.head.pos[0] < WINDOW_WIDTH) or not (
             20 <= self.head.pos[1] < WINDOW_HEIGHT
         ):
@@ -382,7 +394,7 @@ class SnakeGame(Screen):
             self.break_game()
             return
 
-        # เคลื่อนที่หางงู
+        # เคลื่อนที่ของงูและอัปเดตตำแหน่งของหาง
         self.occupied[self.tail[-1].pos] = False
         self.tail[-1].move(self.tail[-2].pos)
 
@@ -394,6 +406,7 @@ class SnakeGame(Screen):
 
         self.head.move()
 
+        # ส่วนของการตรวจสอบการชนกับผลแอปเปิ้ล
         if self.head.pos == self.fruit.pos:
             if self.sound_control.fruit_sound:
                 self.sound_control.fruit_sound.play()
@@ -405,6 +418,7 @@ class SnakeGame(Screen):
             self.add_widget(self.tail[-1])
             self.spawn_fruit()
 
+        # ส่วนของการตรวจสอบการชนกับผลพิษ
         elif self.poison_fruit and self.head.pos == self.poison_fruit.pos:
             if self.sound_control.poison_fruit_sound:
                 self.sound_control.poison_fruit_sound.play()
@@ -424,6 +438,7 @@ class SnakeGame(Screen):
 
                 self.spawn_poison_fruit()
 
+        # ส่วนของการตรวจสอบการชนกับผลลุ้นโชค
         elif any(self.head.pos == fruit.pos for fruit in self.lucky_fruit):
             if self.sound_control.lucky_fruit_sound:
                 self.sound_control.lucky_fruit_sound.play()
@@ -456,6 +471,7 @@ class SnakeGame(Screen):
                 self.remove_widget(fruit)
             self.lucky_fruit = []
 
+        # ส่วนของการปรับระดับความยากของเกม
         if self.count_pause >= 7:
             self.timer.cancel()
             self.timer = Clock.schedule_interval(self.refresh, 0.04)
@@ -468,9 +484,13 @@ class SnakeGame(Screen):
 
         print("score", self.score)
         print("top", self.top_score)
+
+        # ส่วนของการอัปเดตคะแนนสูงสุด
         if self.score > self.top_score:
             self.top_score = self.score
-            self.top_score_label.text = f"Top Score: {str(self.score)}"
+            self.top_score_label.text = (
+                f"Top Score: {str(self.score)}"  # แสดงคะแนนสูงสุดใหม่
+            )
 
     # เล่นเสียงการคลิกปุ่ม และแสดงแถบคะแนน
     def play_button_click_sound(self):
@@ -521,50 +541,58 @@ class SnakeGame(Screen):
             Window.height - self.mute_button.height,
         )
 
-    # หยุดเกมหรือเริ่มเกมใหม่
+    # หยุดหรือเริ่มเกมใหม่โดยตรวจสอบสถานะปัจจุบันของเกม
     def pause_game(self, instance):
-        if self.timer.is_triggered:
+        if self.timer.is_triggered:  # ตรวจสอบว่าเกมถูกหยุดหรือไม่
             self.pauses = True
             self.count_pause += 1
-            self.timer.cancel()
+            self.timer.cancel()  # หยุดตัวจับเวลา
             if not self.muted:
-                self.sound.volume = 0
+                self.sound.volume = 0  # ปรับระดับเสียงลงเป็น 0 เมื่อหยุดเกม
         else:
             self.timer()
             self.pauses = False
             if not self.muted:
-                self.sound.volume = 0.5
+                self.sound.volume = 0.5  # ปรับระดับเสียงเป็น 0.5 เมื่อเริ่มเกมใหม่
 
     # เปิดหรือปิดเสียง
     def toggle_sound(self, instance):
         self.sound_control.toggle_sound(self.pauses, instance)
 
-    # สร้างผลแอปเปิ้ล
+    # สร้างผลแอปเปิ้ลใหม่โดยการสุ่มตำแหน่งใหม่จนกว่าจะได้ตำแหน่งที่ไม่ถูกบดบังโดยสิ่งอื่นในเกม
     def spawn_fruit(self):
         roll = self.fruit.pos
         found = False
         while not found:
+            # สุ่มตำแหน่งใหม่สำหรับผลแอปเปิ้ล
             roll = [
                 PLAYER_SIZE * randint(0, int(WINDOW_WIDTH / PLAYER_SIZE) - 1),
                 PLAYER_SIZE * randint(0, int(WINDOW_HEIGHT / PLAYER_SIZE) - 1),
             ]
+            # ตรวจสอบว่าตำแหน่งที่สุ่มได้ไม่ตรงกับสิ่งอื่นในเกมและไม่ตรงกับหัวงู
             if self.occupied[roll] is True or roll == self.head.pos:
                 continue
             found = True
+            # ตรวจสอบว่าตำแหน่ง Y ที่สุ่มได้ไม่ได้อยู่บนขอบด้านล่างของหน้าจอ
             if roll[1] == 0:
                 found = False
+            # ตรวจสอบว่าตำแหน่ง X ที่สุ่มได้ไม่เกินขอบด้านขวาของหน้าจอ
             if roll[0] == 1050:
                 found = False
         self.fruit.move(roll)
 
     # สร้างผลพิษ
     def spawn_poison_fruit(self):
+        # ถ้ายังไม่มีผลพิษ ให้สร้างและเพิ่มลงในหน้าจอ
         if self.poison_fruit is None:
             self.poison_fruit = PoisonFruit()
             self.add_widget(self.poison_fruit)
+
+        # ค้นหาตำแหน่งที่จะวางผลพิษ บนกริดเกมที่ไม่มีสิ่งกีดขวางอื่น ๆ และไม่ตรงกับตำแหน่งของหัวงูหรือผลไม้อื่นๆ
         roll = self.poison_fruit.pos
         found = False
         while not found:
+            # สุ่มตำแหน่งใหม่สำหรับผลพิษ
             roll = [
                 PLAYER_SIZE * randint(0, int(WINDOW_WIDTH / PLAYER_SIZE) - 1),
                 PLAYER_SIZE * randint(0, int(WINDOW_HEIGHT / PLAYER_SIZE) - 1),
@@ -573,27 +601,40 @@ class SnakeGame(Screen):
                 not self.occupied[roll]
                 and roll != self.head.pos
                 and roll != self.fruit.pos
+                and roll != self.lucky_fruit
             ):
                 found = True
+            # ตรวจสอบว่าตำแหน่ง Y ที่สุ่มได้ไม่ได้อยู่บนขอบด้านล่างของหน้าจอ
             if roll[1] == 0:
                 found = False
+            # ตรวจสอบว่าตำแหน่ง X ที่สุ่มได้ไม่เกินขอบด้านขวาของหน้าจอ
             if roll[0] == 1050:
                 found = False
+
+        # ย้าย Poison Fruit ไปยังตำแหน่งที่สุ่มได้
         self.poison_fruit.move(roll)
 
     # สร้างผลลุ้นโชค
     def spawn_lucky_fruit(self):
+        # สร้างผลลุ้นโชคใหม่และเพิ่มลงใน list ของ lucky_fruit
         new_lucky_fruit = LuckyFruit()
         self.lucky_fruit.append(new_lucky_fruit)
         self.add_widget(new_lucky_fruit)
+
+        # เล่นเสียงเมื่อผลลุ้นโชค ถูกสร้างขึ้น
         if self.sound_control.spawn_lucky_fruit_sound:
             self.sound_control.spawn_lucky_fruit_sound.play()
+
+        # ค้นหาตำแหน่งที่จะวาง Lucky Fruit บนกริดเกมที่ไม่มีสิ่งกีดขวางอื่น ๆ
         found = False
         while not found:
+            # สุ่มตำแหน่งใหม่สำหรับผลลุ้นโชค
             roll = [
                 PLAYER_SIZE * random.randint(0, int(WINDOW_WIDTH / PLAYER_SIZE) - 1),
                 PLAYER_SIZE * random.randint(0, int(WINDOW_HEIGHT / PLAYER_SIZE) - 1),
             ]
+
+            # ตรวจสอบว่าตำแหน่งที่สุ่มได้ไม่มีสิ่งกีดขวางและไม่ตรงกับตำแหน่งของหัวงูหรือผลไม้หรือผลไม้พิษ
             if (
                 not self.occupied[roll]
                 and roll != self.head.pos
@@ -601,33 +642,50 @@ class SnakeGame(Screen):
                 and roll != self.poison_fruit.pos
             ):
                 found = True
+
+            # ตรวจสอบว่าตำแหน่ง Y ที่สุ่มได้ไม่ได้อยู่บนขอบด้านล่างของหน้าจอ
             if roll[1] == 0:
                 found = False
+            # ตรวจสอบว่าตำแหน่ง X ที่สุ่มได้ไม่เกินขอบด้านขวาของหน้าจอ
             if roll[0] == 1050:
                 found = False
+        # ย้าย Lucky Fruit ไปยังตำแหน่งที่สุ่มได้
         new_lucky_fruit.move(roll)
 
     # จบเกม
     def break_game(self):
+        # แสดง Popup เมื่อเกมจบพร้อมกับส่งค่าคะแนนและตัวเกมเพื่อให้ Popup แสดงค่าคะแนนให้ผู้เล่น
         score_popup = GameOverPopup(
             score=self.score, game_instance=self, muted=self.sound_control.muted
         )
         score_popup.open()
+
+        # เล่นเสียง Game Over
         self.sound_control.play_gameOver_sound()
+
+        # หยุดเสียงพื้นหลัง
         self.sound_control.stop_sound()
+
+        # ลบตัวแทนของหางงูออกจากการแสดงผล
         for block in self.tail:
             self.remove_widget(block)
+
+        # ยกเลิกการตั้งเวลาในเกม
         self.timer.cancel()
         self.mute_button.disabled = True
         self.pause.disabled = True
+
+        # ลบผลลุ้นโชค ออกจากการแสดงผล (ถ้ามี)
         if self.lucky_fruit:
             for fruit in self.lucky_fruit:
                 self.remove_widget(fruit)
             self.lucky_fruit = []
+
+        # บันทึกคะแนนที่สูงที่สุดเมื่อมีคะแนนใหม่ที่มากกว่าคะแนนสูงที่สุดเก่า
         if self.score > load_top_score():
             save_top_score(self.score)
 
-        # รีเซ็ต Score ไปเป็น 0 หลังจาก brake
+        # รีเซ็ตคะแนนใหม่เป็น 0 และอัปเดตค่าใน Score Label
         self.score = 0
         self.last_score = 0
         self.score_label.text = f"Score: {self.score}"
@@ -640,49 +698,74 @@ class SnakeGame(Screen):
 
     # เริ่มเกมใหม่
     def restart_game(self):
+        # รีเซ็ตตัวแปรที่เกี่ยวข้องกับการหยุดเกม
         self.count_pause = 0
         self.pause.disabled = False
         self.mute_button.disabled = False
-        self.occupied = smartGrid()
-        self.timer.cancel()
-        self.timer = Clock.schedule_interval(self.refresh, SPEED)
-        self.head.reset_pos()
-        self.score = 0
 
+        # สร้างตารางที่เก็บข้อมูลเกี่ยวกับตำแหน่งของตัวแทนต่างๆในเกม
+        self.occupied = smartGrid()
+
+        # เริ่มตั้งค่าตัวแปรเพื่อการทำงานของเกม
+        self.timer.cancel()  # ยกเลิกการตั้งเวลา
+        self.timer = Clock.schedule_interval(self.refresh, SPEED)  # ตั้งเวลาเริ่มต้นเกมใหม่
+        self.head.reset_pos()  # รีเซ็ตตำแหน่งหัวงูกลับไปที่ตำแหน่งเริ่มต้น
+        self.score = 0  # รีเซ็ตค่าคะแนนเริ่มต้นเป็น 0
+
+        # สร้างตัวแทนของหางงู
         self.tail = []
         self.tail.append(
             SnakeTail(
-                pos=(self.head.pos[0] - PLAYER_SIZE, self.head.pos[1]),
-                size=(self.head.size),
-                color=self.color,
+                pos=(
+                    self.head.pos[0] - PLAYER_SIZE,
+                    self.head.pos[1],
+                ),  # ตำแหน่งเริ่มต้นของหางงูที่ห่างจากหัวงู 1 ช่อง
+                size=(self.head.size),  # ขนาดของหางงูเท่ากับขนาดของหัวงู
+                color=self.color,  # สีของหางงู
             )
         )
-        self.add_widget(self.tail[-1])
-        self.occupied[self.tail[-1].pos] = True
+        self.add_widget(self.tail[-1])  # เพิ่มหางงูลงในเกม
+        self.occupied[self.tail[-1].pos] = True  # บันทึกตำแหน่งของหางงูในตาราง
 
+        # สร้างหางงูที่สอง
         self.tail.append(
             SnakeTail(
-                pos=(self.head.pos[0] - 2 * PLAYER_SIZE, self.head.pos[1]),
-                size=(self.head.size),
-                color=self.color,
+                pos=(
+                    self.head.pos[0] - 2 * PLAYER_SIZE,
+                    self.head.pos[1],
+                ),  # ตำแหน่งเริ่มต้นของหางงูที่ห่างจากหัวงู 2 ช่อง
+                size=(self.head.size),  # ขนาดของหางงูเท่ากับขนาดของหัวงู
+                color=self.color,  # สีของหางงู
             )
         )
-        self.add_widget(self.tail[-1])
-        self.occupied[self.tail[1].pos] = True
-        self.spawn_fruit()
-        self.spawn_poison_fruit()
+        self.add_widget(self.tail[-1])  # เพิ่มหางงูลงในเกม
+        self.occupied[self.tail[1].pos] = True  # บันทึกตำแหน่งของหางงูในตาราง
+        self.spawn_fruit()  # สร้างผลแอปเปิ้ลใหม่ในเกม
+        self.spawn_poison_fruit()  # สร้างผลพิษใหม่ในเกม
 
     # รับคำสั่งจากแป้นพิมพ์
     def key_action(self, *args):
-        command = list(args)[3]
+        command = list(args)[3]  # ดึงคำสั่งที่ถูกส่งมาผ่านพารามิเตอร์ args
         if command == "w" or command == "up":
-            self.head.orientation = (0, PLAYER_SIZE)
+            self.head.orientation = (
+                0,
+                PLAYER_SIZE,
+            )  # ถ้าเป็นคำสั่ง "w" หรือ "up" ให้งูเคลื่อนไปด้านบน
         elif command == "s" or command == "down":
-            self.head.orientation = (0, -PLAYER_SIZE)
+            self.head.orientation = (
+                0,
+                -PLAYER_SIZE,
+            )  # ถ้าเป็นคำสั่ง "s" หรือ "down" ให้งูเคลื่อนไปด้านล่าง
         elif command == "a" or command == "left":
-            self.head.orientation = (-PLAYER_SIZE, 0)
+            self.head.orientation = (
+                -PLAYER_SIZE,
+                0,
+            )  # ถ้าเป็นคำสั่ง "a" หรือ "left" ให้งูเคลื่อนไปด้านซ้าย
         elif command == "d" or command == "right":
-            self.head.orientation = (PLAYER_SIZE, 0)
+            self.head.orientation = (
+                PLAYER_SIZE,
+                0,
+            )  # ถ้าเป็นคำสั่ง "d" หรือ "right" ให้งูเคลื่อนไปด้านขวา
 
 
 if __name__ == "__main__":
