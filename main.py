@@ -25,6 +25,7 @@ from os.path import basename
 from kivy.uix.colorpicker import ColorPicker
 from gameover import GameOverPopup
 from smartgrid import smartGrid
+from sound import SoundControl
 
 Config.set("graphics", "width", "900")
 Config.set("graphics", "height", "600")
@@ -142,7 +143,7 @@ class StartScreen(Screen):
     def start_game(self, dt):
         self.manager.current = "game"
         sound = not self.muted        
-        self.manager.get_screen("game").start_game_sound(sound)
+        self.manager.get_screen("game").sound_control.start_game_sound(sound)
         self.manager.get_screen("game").start_game()
 
     def open_color_picker(self):
@@ -250,10 +251,7 @@ class SnakeGame(Screen):
     player_size = NumericProperty(PLAYER_SIZE)
     ck = False
     color = ObjectProperty(None)
-    fruit_sound = SoundLoader.load("sounds/collide+.mp3")
-    poison_fruit_sound = SoundLoader.load("sounds/collide-.mp3")
-    lucky_fruit_sound = SoundLoader.load("sounds/collide_lucky.mp3")
-    gameOver_sound = SoundLoader.load("sounds/gameOver.mp3")
+    sound_control = SoundControl()
 
     def __init__(self, **kwargs):
         super(SnakeGame, self).__init__(**kwargs)
@@ -271,7 +269,8 @@ class SnakeGame(Screen):
         self.count_pause = 0
         self.sound = SoundLoader.load("sounds/background.mp3")
         self.sound_pos = None
-        self.color = [0.5, 1.0, 1, 1]
+        self.color = [0.5, 1.0, 1, 1]     
+        self.pauses = False   
 
     def set_snake_tail_color(self, color):
         self.color = color            
@@ -372,8 +371,8 @@ class SnakeGame(Screen):
         self.head.move()
 
         if self.head.pos == self.fruit.pos:
-            if self.fruit_sound:
-                self.fruit_sound.play()
+            if self.sound_control.fruit_sound:
+                self.sound_control.fruit_sound.play()
             self.score += 1
             self.score_label.text = f"Score: {self.score}"
             self.tail.append(SnakeTail(pos=self.head.pos, size=self.head.size, color=self.color))
@@ -381,8 +380,8 @@ class SnakeGame(Screen):
             self.spawn_fruit()
 
         elif self.poison_fruit and self.head.pos == self.poison_fruit.pos:
-            if self.poison_fruit_sound:
-                self.poison_fruit_sound.play()
+            if self.sound_control.poison_fruit_sound:
+                self.sound_control.poison_fruit_sound.play()
             self.score -= 3
             self.score_label.text = f"Score: {self.score}"
             if self.score < 0:
@@ -400,8 +399,8 @@ class SnakeGame(Screen):
                 self.spawn_poison_fruit()
 
         elif any(self.head.pos == fruit.pos for fruit in self.lucky_fruit):
-            if self.lucky_fruit_sound:
-                self.lucky_fruit_sound.play()
+            if self.sound_control.lucky_fruit_sound:
+                self.sound_control.lucky_fruit_sound.play()
             score_change = randint(-5, 5)
             self.score += score_change
             self.score_label.text = f"Score: {self.score}"
@@ -492,48 +491,19 @@ class SnakeGame(Screen):
 
     def pause_game(self, instance):
         if self.timer.is_triggered:
+            self.pauses = True
             self.count_pause += 1
             self.timer.cancel()
             if not self.muted:
                 self.sound.volume = 0
         else:
             self.timer()
+            self.pauses = False
             if not self.muted:
                 self.sound.volume = 0.5
 
-    def stop_sound(self):
-        self.sound.stop()
-
-    def start_game_sound(self, status):
-        self.sound.play()
-        self.sound.loop = True
-        if status:
-            self.muted = False
-        if not self.muted:
-            self.sound.volume = 0.5
-        else:
-            self.mute_button.text = "Unmute"
-            self.sound.volume = 0
-
     def toggle_sound(self, instance):
-        if self.sound:
-            if not self.muted:
-                self.sound.volume = 0
-                self.fruit_sound.volume = 0
-                self.gameOver_sound.volume = 0
-                self.poison_fruit_sound.volume = 0
-                self.lucky_fruit_sound.volume = 0
-                self.muted = True
-                self.mute_button.text = "Unmute"
-            else:
-                if self.timer.is_triggered:
-                    self.sound.volume = 0.5
-                    self.fruit_sound.volume = 0.5
-                    self.gameOver_sound.volume = 0.5
-                    self.poison_fruit_sound.volume = 0.5
-                    self.lucky_fruit_sound.volume = 0.5
-                    self.muted = False
-                    self.mute_button.text = "Mute"
+        self.sound_control.toggle_sound(self.pauses,instance)
 
     def spawn_fruit(self):
         roll = self.fruit.pos
@@ -601,10 +571,10 @@ class SnakeGame(Screen):
         new_lucky_fruit.move(roll)
 
     def break_game(self):
-        score_popup = GameOverPopup(score=self.score, game_instance=self)
+        score_popup = GameOverPopup(score=self.score, game_instance=self , muted=self.sound_control.muted)
         score_popup.open()
-        self.play_gameOver_sound()
-        self.stop_sound()
+        self.sound_control.play_gameOver_sound()
+        self.sound_control.stop_sound()
         for block in self.tail:
             self.remove_widget(block)
         self.timer.cancel()
@@ -672,9 +642,6 @@ class SnakeGame(Screen):
         elif command == "r":
             self.restart_game()
 
-    def play_gameOver_sound(self):
-        if self.gameOver_sound:
-            self.gameOver_sound.play()
 
 
 if __name__ == "__main__":

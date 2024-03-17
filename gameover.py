@@ -3,16 +3,18 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import App
-
+from sound import SoundControl
 
 class GameOverPopup(Popup):
-    def __init__(self, score, game_instance, **kwargs):
+    #sound_control = SoundControl()
+    def __init__(self, score, game_instance,muted, **kwargs):
         super(GameOverPopup, self).__init__(**kwargs)
+        #self.sound_control.stop_sound()
         self.title = "Game Over"
         self.size_hint = (None, None)
         self.size = (400, 300)
         self.game_instance = game_instance
-
+        self.muted = muted
         content_layout = BoxLayout(orientation="vertical")
 
         score_label = "Your Score: {}".format(max(score, 0))
@@ -33,9 +35,10 @@ class GameOverPopup(Popup):
         App.get_running_app().root.get_screen("start").pre_start(instance, self.game_instance.muted)
     
     def close_and_restart(self, instance):
-        self.dismiss()
-        self.game_instance.start_game_sound(False)
+        self.dismiss()        
+        self.game_instance.sound_control.start_game_sound(self.muted)
         self.game_instance.start_game()
+        
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
