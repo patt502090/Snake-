@@ -63,6 +63,7 @@ class StartScreen(Screen):
         self.exit_button.disabled = False
         self.color_button.disabled = False
         self.color_button.opacity = 1
+        self.top_score_label.opacity = 1
         App.get_running_app().root.transition.direction = "right"
         App.get_running_app().root.current = "start"
 
@@ -193,7 +194,7 @@ class StartScreen(Screen):
 # กำหนดหน้าจอเกม
 class SnakeHead(Widget):
     orientation = (PLAYER_SIZE, 0)
-    source = StringProperty("snake2.png")
+    source = StringProperty("image/snake2.png")
 
     def reset_pos(self):
         # รีเซ็ตตำแหน่งของหัวงูไปที่กลางของหน้าต่าง. หรือ วางตำแหน่งผู้เล่นไว้ตรงกลางกระดานเกม
@@ -466,8 +467,8 @@ class SnakeGame(Screen):
             self.timer.cancel()
             self.timer = Clock.schedule_interval(self.refresh, 0.127)
 
-        print("score", self.score)
-        print("top", self.top_score)
+        #print("score", self.score)
+        #print("top", self.top_score)
         if self.score > self.top_score:
             self.top_score = self.score
             self.top_score_label.text = f"Top Score: {str(self.score)}"
