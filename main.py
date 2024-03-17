@@ -477,14 +477,14 @@ class SnakeGame(Screen):
         if top_score < self.score:
             top_score = self.score
         top_score_label = Label(
-            text=f"Top Score: {top_score}", size_hint=(None, None), height=50, width=150
+            text=f"Top Score: {top_score}", size_hint=(None, None), height=50, width=300
         )
         self.score_box.add_widget(top_score_label)
 
         # Mute button
-        self.mute_button = Button(text="Mute", size_hint=(None, None), size=(80, 50))
+        self.mute_button = Button(text="Mute", size_hint=(None, None), size=(100, 50))
         self.mute_button.bind(on_press=self.toggle_sound)
-        self.pause = Button(text="pause", size_hint=(None, None), size=(70, 50))
+        self.pause = Button(text="pause", size_hint=(None, None), size=(100, 50))
         self.pause.bind(on_press=self.pause_game)
         self.score_box.add_widget(self.mute_button)
         self.score_box.add_widget(self.pause)
