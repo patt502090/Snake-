@@ -43,7 +43,7 @@ class SoundControl:
                     self.poison_fruit_sound.volume = 0.5
                     self.lucky_fruit_sound.volume = 0.5
                     self.spawn_lucky_fruit_sound.volume = 1
-                    instance.text = "mute"
+                    instance.text = "Mute"
                     self.muted = False     
 
     def play_gameOver_sound(self):

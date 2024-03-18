@@ -430,7 +430,7 @@ class SnakeGame(Screen):
                 ]
                 for pos in new_tail_positions:
                     # สร้างหางใหม่และเพิ่มลงในเกม
-                    self.tail.append(SnakeTail(pos=pos, size=self.head.size))
+                    self.tail.append(SnakeTail(pos=pos, size=self.head.size, color=self.color))
                     self.add_widget(self.tail[-1])
 
                 self.spawn_poison_fruit()  # สร้างผลพิษใหม่ในเกม
@@ -455,7 +455,7 @@ class SnakeGame(Screen):
                             self.head.pos[1],
                         )
                         new_tail = SnakeTail(
-                            pos=new_tail_pos, size=self.head.size
+                            pos=new_tail_pos, size=self.head.size, color=self.color
                         )  # สร้างหางใหม่
                         self.tail.append(new_tail)  # เพิ่มหางใหม่ลงในรายการหาง
                         self.add_widget(new_tail)  # เพิ่มหางใหม่ลงในหน้าจอเกม
@@ -531,7 +531,10 @@ class SnakeGame(Screen):
         self.score_box.add_widget(self.top_score_label)
 
         # Mute button
+        
         self.mute_button = Button(text="Mute", size_hint=(None, None), size=(100, 50))
+        if self.sound_control.muted:
+            self.mute_button.text = "Unmute"
         self.mute_button.bind(on_press=self.toggle_sound)
         self.pause = Button(text="pause", size_hint=(None, None), size=(100, 50))
         self.pause.bind(on_press=self.pause_game)
@@ -550,13 +553,13 @@ class SnakeGame(Screen):
             self.pauses = True
             self.count_pause += 1
             self.timer.cancel()  # หยุดตัวจับเวลา
-            if not self.muted:
-                self.sound.volume = 0  # ปรับระดับเสียงลงเป็น 0 เมื่อหยุดเกม
+            if not self.sound_control.muted:
+                self.sound_control.sound.volume = 0  # ปรับระดับเสียงลงเป็น 0 เมื่อหยุดเกม
         else:
             self.timer()
             self.pauses = False
-            if not self.muted:
-                self.sound.volume = 0.5  # ปรับระดับเสียงเป็น 0.5 เมื่อเริ่มเกมใหม่
+            if not self.sound_control.muted:
+                self.sound_control.sound.volume = 0.5  # ปรับระดับเสียงเป็น 0.5 เมื่อเริ่มเกมใหม่
 
     # เปิดหรือปิดเสียง
     def toggle_sound(self, instance):
