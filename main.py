@@ -286,12 +286,6 @@ class SnakeGame(Screen):
 
         Window.bind(on_key_down=self.key_action)
 
-        if PLAYER_SIZE < 3:
-            raise ValueError("ขนาดโปรแกรมเล่นควรมีอย่างน้อย 3 px")
-
-        if WINDOW_HEIGHT < 3 * PLAYER_SIZE or WINDOW_WIDTH < 3 * PLAYER_SIZE:
-            raise ValueError("ขนาดหน้าต่างต้องมีขนาดใหญ่กว่าขนาดเครื่องเล่นอย่างน้อย 3 เท่า")
-
         self.tail = []
         self.count_pause = 0
         self.sound = SoundLoader.load("sounds/background.mp3")
@@ -421,53 +415,63 @@ class SnakeGame(Screen):
 
         # ส่วนของการตรวจสอบการชนกับผลพิษ
         elif self.poison_fruit and self.head.pos == self.poison_fruit.pos:
+            # ตรวจสอบว่ามีผลพิษอยู่ในเกมและตำแหน่งของหัวงูตรงกับตำแหน่งของผลพิษหรือไม่
             if self.sound_control.poison_fruit_sound:
-                self.sound_control.poison_fruit_sound.play()
-            self.score -= 3
-            self.score_label.text = f"Score: {self.score}"
+                self.sound_control.poison_fruit_sound.play()  # เล่นเสียงเมื่อหัวงูชนกับผลพิษ
+            self.score -= 3  # ลดคะแนน
+            self.score_label.text = f"Score: {self.score}"  # ปรับป้ายแสดงคะแนน
             if self.score < 0:
-                self.break_game()
+                self.break_game()  # หยุดเกมหากคะแนนลบ
             else:
+                # สร้างตำแหน่งใหม่สำหรับหางงู โดยเริ่มต้นที่ตำแหน่งของหัวงู
                 new_tail_positions = [
                     (self.head.pos[0] + (i + 1) * PLAYER_SIZE, self.head.pos[1])
                     for i in range(2)
                 ]
-                # เพิ่มตำแหน่งของหางใหม่
                 for pos in new_tail_positions:
+                    # สร้างหางใหม่และเพิ่มลงในเกม
                     self.tail.append(SnakeTail(pos=pos, size=self.head.size))
                     self.add_widget(self.tail[-1])
 
-                self.spawn_poison_fruit()
+                self.spawn_poison_fruit()  # สร้างผลพิษใหม่ในเกม
 
         # ส่วนของการตรวจสอบการชนกับผลลุ้นโชค
         elif any(self.head.pos == fruit.pos for fruit in self.lucky_fruit):
+            # ถ้าหัวงูอยู่ในตำแหน่งเดียวกับผลไม้ของ Lucky Fruit ในรายการ lucky_fruit
             if self.sound_control.lucky_fruit_sound:
-                self.sound_control.lucky_fruit_sound.play()
-            score_change = randint(-5, 5)
-            self.score += score_change
-            self.score_label.text = f"Score: {self.score}"
+                self.sound_control.lucky_fruit_sound.play()  # เล่นเสียงสำหรับ Lucky Fruit
+            score_change = randint(-5, 5)  # เปลี่ยนคะแนนอย่างสุ่ม
+            self.score += score_change  # เพิ่มคะแนนด้วยค่าที่เปลี่ยนแปลง
+            self.score_label.text = f"Score: {self.score}"  # ปรับป้ายแสดงคะแนน
             if self.score < 0:
-                self.break_game()
+                self.break_game()  # หยุดเกมหากคะแนนลบ
             else:
-                tail_change = randint(1, 3)
-                if tail_change > 0:
+                tail_change = randint(1, 3)  # กำหนดการเปลี่ยนแปลงของความยาวของหางโดยสุ่ม
+                if tail_change > 0:  # ถ้าความยาวของหางที่เพิ่มมากกว่า 0
                     for _ in range(tail_change):
+                        # สร้างตำแหน่งใหม่ของหางใหม่ที่จะเพิ่ม
                         new_tail_pos = (
                             self.head.pos[0] + len(self.tail) * PLAYER_SIZE,
                             self.head.pos[1],
                         )
-                        new_tail = SnakeTail(pos=new_tail_pos, size=self.head.size)
-                        self.tail.append(new_tail)
-                        self.add_widget(new_tail)
-                        self.occupied[new_tail_pos] = True
-                elif tail_change < 0:
+                        new_tail = SnakeTail(
+                            pos=new_tail_pos, size=self.head.size
+                        )  # สร้างหางใหม่
+                        self.tail.append(new_tail)  # เพิ่มหางใหม่ลงในรายการหาง
+                        self.add_widget(new_tail)  # เพิ่มหางใหม่ลงในหน้าจอเกม
+                        self.occupied[new_tail_pos] = True  # บันทึกตำแหน่งของหางใหม่ในตาราง
+                elif tail_change < 0:  # ถ้าความยาวของหางที่เพิ่มน้อยกว่า 0
                     for _ in range(abs(tail_change)):
                         if len(self.tail) > 0:
-                            removed_tail = self.tail.pop()
-                            self.remove_widget(removed_tail)
-                            self.occupied[removed_tail.pos] = False
+                            removed_tail = self.tail.pop()  # นำหางที่ยุติการเคลื่อนที่ออก
+                            self.remove_widget(
+                                removed_tail
+                            )  # ลบหางที่ยุติการเคลื่อนที่ออกจากหน้าจอเกม
+                            self.occupied[removed_tail.pos] = (
+                                False  # ลบตำแหน่งของหางที่ยุติการเคลื่อนที่ออกจากตาราง
+                            )
 
-            # ลบ lucky fruit ที่ชนออกจากการแสดงผล
+            # ลบผลลุ้นโชค ที่ชนออกจากการแสดงผล
             for fruit in self.lucky_fruit:
                 self.remove_widget(fruit)
             self.lucky_fruit = []
